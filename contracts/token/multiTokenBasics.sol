@@ -3,7 +3,6 @@ pragma solidity ^0.4.18;
 
 contract multiTokenBasics {
 
-  function getDecimals() public view returns(uint8);
   function mulTotalSupply(uint256 _tokenId) public view returns (uint256);
   function mulBalanceOf(uint256 _tokenId, address _owner) public view returns (uint256);
   function ownerOf(uint256 _tokenId)  public view returns (address);

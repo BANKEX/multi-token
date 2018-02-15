@@ -19,10 +19,6 @@ contract multiToken is Ownable, multiTokenBasics{
     uint256 public mask = 0xffffffff;
 
 
-    function getDecimals() public view returns(uint8){
-      return decimals;
-    }
-
 
     /**
     * @dev Throws if _tokenId not exists

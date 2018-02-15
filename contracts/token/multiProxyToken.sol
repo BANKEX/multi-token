@@ -8,17 +8,24 @@ contract multiProxyToken{
 
 
   mapping (address => address) private addr;
-  mapping (address => string) private symbol_;
   mapping (address => uint256) private tokenId;
+
+  string public symbol = "PROXY_ANY";
+  uint8 public decimals = 18;
 
   event Transfer(address indexed from, address indexed to, uint256 value);
   event Approval(address indexed owner, address indexed spender, uint256 value);
 
-  function connect(address _addr, uint256 _tokenId, string _sign) public returns(bool){
+  modifier existingSender() {
+    require(msg.sender!=address(0));
+    _;
+  }
+
+  function connect(address _addr, uint256 _tokenId) public returns(bool){
     var _sender = msg.sender;
     addr[_sender] = _addr;
     tokenId[_sender] = _tokenId;
-    symbol_[_sender] = _sign;
+
     return true;
   }
 /*
@@ -52,47 +59,40 @@ contract multiProxyToken{
     return genSign("TEST", tokenId[msg.sender]);
   }
 */
-  function symbol() view returns(string){
-    return symbol_[msg.sender];
-  }
-
-  function decimals() view returns(uint8){
-    var tkn = multiTokenBasics(addr[msg.sender]);
-    return tkn.getDecimals();
-  }
+  
 
 
-  function totalSupply() public view returns (uint256) {
+  function totalSupply() existingSender() public view returns (uint256) {
     var tkn = multiTokenBasics(addr[msg.sender]);
     return tkn.mulTotalSupply(tokenId[msg.sender]);
   }
 
-  function balanceOf(address _owner) public view returns (uint256) {
+  function balanceOf(address _owner) existingSender() public view returns (uint256) {
     var tkn = multiTokenBasics(addr[msg.sender]);
     return tkn.mulBalanceOf(tokenId[msg.sender], _owner);
   }
 
-  function allowance(address _owner, address _spender) public view returns (uint256) {
+  function allowance(address _owner, address _spender) existingSender() public view returns (uint256) {
     var tkn = multiTokenBasics(addr[msg.sender]);
     return tkn.mulAllowance(tokenId[msg.sender], _owner, _spender);
   }
 
 
-  function transfer(address _to, uint256 _value) public returns (bool success) {
+  function transfer(address _to, uint256 _value) existingSender() public returns (bool success) {
     var tkn = multiTokenBasics(addr[msg.sender]);
     require(tkn.prxTransfer(tokenId[msg.sender], _to, _value));
     Transfer(msg.sender, _to, _value);
     return true;
   }
 
-  function transferFrom(address _from, address _to, uint256 _value) public returns (bool){
+  function transferFrom(address _from, address _to, uint256 _value) existingSender() public returns (bool){
     var tkn = multiTokenBasics(addr[msg.sender]);
     require(tkn.prxTransferFrom(tokenId[msg.sender], _from, _to, _value));
     Transfer(_from, _to, _value);
     return true;
   }
 
-  function approve(address _spender, uint256 _value) public returns (bool){
+  function approve(address _spender, uint256 _value) existingSender() public returns (bool){
     var tkn = multiTokenBasics(addr[msg.sender]);
     require(tkn.prxApprove(tokenId[msg.sender], _spender, _value));
     Approval(msg.sender, _spender, _value);
