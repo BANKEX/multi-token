@@ -1,7 +1,7 @@
 pragma solidity ^0.4.18;
 
-import "../math/SafeMath.sol";
-import "../ownership/Ownable.sol";
+import "../../math/SafeMath.sol";
+import "../../ownership/Ownable.sol";
 import "./multiTokenBasics.sol";
 
 
@@ -58,18 +58,6 @@ contract multiToken is Ownable, multiTokenBasics{
     modifier onlyOwnerOf(uint256 _tokenId) {
       require(ownerOf(_tokenId) == msg.sender);
       _;
-    }
-
-
-    /**
-    * @dev add new ERC20 proxy
-    * @param proxy address The address of proxy contract
-    * @return uint256 representing the total amount of tokens
-    */
-
-    function approveProxy(address proxy) onlyOwner() public returns (bool) {
-      approvedProxy[proxy]=true;
-      return true;
     }
 
 
@@ -143,20 +131,6 @@ contract multiToken is Ownable, multiTokenBasics{
     * @param _value The amount to be transferred.
     */
 
-
-    function prxTransfer(uint256 _tokenId, address _to, uint256 _value) onlyProxy() existingToken(_tokenId) public returns (bool){
-      var _sender = tx.origin;
-      var balances = mulBalances[_tokenId];
-      require(_to != address(0));
-      require(_value <= balances[_sender]);
-
-      // SafeMath.sub will throw if there is not enough balance.
-      balances[_sender] = balances[_sender].sub(_value);
-      balances[_to] = balances[_to].add(_value);
-      MulTransfer(_tokenId, _sender, _to, _value);
-      return true;
-    }
-
     function mulTransfer(uint256 _tokenId, address _to, uint256 _value) existingToken(_tokenId) public returns (bool){
       var _sender = msg.sender;
       var balances = mulBalances[_tokenId];
@@ -178,23 +152,6 @@ contract multiToken is Ownable, multiTokenBasics{
     * @param _to address The address which you want to transfer to
     * @param _value uint256 the amount of tokens to be transferred
     */
-
-
-
-    function prxTransferFrom(uint256 _tokenId, address _from, address _to, uint256 _value) onlyProxy() existingToken(_tokenId) public returns (bool){
-      var _sender = tx.origin;
-      var balances = mulBalances[_tokenId];
-      var allowed = mulAllowed[_tokenId];
-      require(_to != address(0));
-      require(_value <= balances[_from]);
-      require(_value <= allowed[_from][_sender]);
-
-      balances[_from] = balances[_from].sub(_value);
-      balances[_to] = balances[_to].add(_value);
-      allowed[_from][_sender] = allowed[_from][_sender].sub(_value);
-      MulTransfer(_tokenId, _from, _to, _value);
-      return true;
-    }
 
     function mulTransferFrom(uint256 _tokenId, address _from, address _to, uint256 _value) existingToken(_tokenId) public returns (bool){
       var _sender = msg.sender;
@@ -226,12 +183,6 @@ contract multiToken is Ownable, multiTokenBasics{
     */
 
 
-    function prxApprove(uint256 _tokenId, address _spender, uint256 _value) onlyProxy() public returns (bool){
-      var _sender = tx.origin;
-      mulAllowed[_tokenId][_sender][_spender] = _value;
-      MulApproval(_tokenId, _sender, _spender, _value);
-      return true;
-    }
 
     function mulApprove(uint256 _tokenId, address _spender, uint256 _value) public returns (bool){
       var _sender = msg.sender;
