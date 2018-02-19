@@ -8,11 +8,11 @@ import "./multiTokenBasics.sol";
 contract multiToken is Ownable, multiTokenBasic{
     using SafeMath for uint256;
 
-    mapping (uint256 => mapping (address => mapping (address => uint256))) private mulAllowed;
-    mapping (uint256 => mapping(address => uint256)) private mulBalances;
-    mapping (uint256 => address) private mulOwner;
-    mapping (uint256 => uint256) private mulTotalSupply_;
-    mapping (address => bool) private approvedProxy;
+    mapping (uint256 => mapping (address => mapping (address => uint256))) private allowed;
+    mapping (uint256 => mapping(address => uint256)) private balance;
+    mapping (uint256 => address) private owner_;
+    mapping (uint256 => uint256) private totalSupply_;
+
 
 
     uint8 public decimals = 18;
@@ -26,7 +26,7 @@ contract multiToken is Ownable, multiTokenBasic{
     */
 
     modifier existingToken(uint256 _tokenId) {
-      require(mulOwner[_tokenId]!=address(0) && (_tokenId & mask == _tokenId));
+      require(owner_[_tokenId]!=address(0) && (_tokenId & mask == _tokenId));
       _;
     }
 
@@ -36,18 +36,10 @@ contract multiToken is Ownable, multiTokenBasic{
     */
 
     modifier notExistingToken(uint256 _tokenId) {
-      require(mulOwner[_tokenId]==address(0) && (_tokenId & mask == _tokenId));
+      require(owner_[_tokenId]==address(0) && (_tokenId & mask == _tokenId));
       _;
     }
 
-    /**
-    * @dev Throws if called by any account other than proxy
-    */
-
-    modifier onlyProxy() {
-      require(approvedProxy[msg.sender]);
-      _;
-    }
 
 
     /**
@@ -70,10 +62,10 @@ contract multiToken is Ownable, multiTokenBasic{
     */
 
     function mint(uint256 _tokenId, address _to, uint256 _value) notExistingToken(_tokenId) onlyOwner() public returns (bool) {
-      mulBalances[_tokenId][_to] = _value;
-      mulTotalSupply_[_tokenId] = _value;
-      mulOwner[_tokenId] = msg.sender;
-      MulTransfer(_tokenId, address(0), _to, _value);
+      balance[_tokenId][_to] = _value;
+      totalSupply_[_tokenId] = _value;
+      owner_[_tokenId] = msg.sender;
+      transfer(_tokenId, address(0), _to, _value);
       return true;
     }
 
@@ -84,8 +76,8 @@ contract multiToken is Ownable, multiTokenBasic{
     * @return uint256 representing the total amount of tokens
     */
 
-    function mulTotalSupply(uint256 _tokenId) existingToken(_tokenId) public view returns (uint256) {
-      return mulTotalSupply_[_tokenId];
+    function totalSupply(uint256 _tokenId) existingToken(_tokenId) public view returns (uint256) {
+      return totalSupply_[_tokenId];
     }
 
     /**
@@ -95,8 +87,8 @@ contract multiToken is Ownable, multiTokenBasic{
     * @return uint256 representing the amount owned by the passed address
     */
 
-    function mulBalanceOf(uint256 _tokenId, address _owner) existingToken(_tokenId) public view returns (uint256) {
-      return mulBalances[_tokenId][_owner];
+    function balanceOf(uint256 _tokenId, address _owner) existingToken(_tokenId) public view returns (uint256) {
+      return balance[_tokenId][_owner];
     }
 
 
@@ -107,7 +99,7 @@ contract multiToken is Ownable, multiTokenBasic{
     */
 
     function ownerOf(uint256 _tokenId) existingToken(_tokenId) public view returns (address) {
-      return mulOwner[_tokenId];
+      return owner_[_tokenId];
     }
 
     /**
@@ -118,8 +110,8 @@ contract multiToken is Ownable, multiTokenBasic{
     * @return A uint256 specifying the amount of tokens still available for the spender.
     */
 
-    function mulAllowance(uint256 _tokenId, address _owner, address _spender) existingToken(_tokenId) public view returns (uint256) {
-      return mulAllowed[_tokenId][_owner][_spender];
+    function allowance(uint256 _tokenId, address _owner, address _spender) existingToken(_tokenId) public view returns (uint256) {
+      return allowed[_tokenId][_owner][_spender];
     }
 
 
@@ -131,16 +123,16 @@ contract multiToken is Ownable, multiTokenBasic{
     * @param _value The amount to be transferred.
     */
 
-    function mulTransfer(uint256 _tokenId, address _to, uint256 _value) existingToken(_tokenId) public returns (bool){
+    function transfer(uint256 _tokenId, address _to, uint256 _value) existingToken(_tokenId) public returns (bool){
       var _sender = msg.sender;
-      var balances = mulBalances[_tokenId];
+      var balances = balance[_tokenId];
       require(_to != address(0));
       require(_value <= balances[_sender]);
 
       // SafeMath.sub will throw if there is not enough balance.
       balances[_sender] = balances[_sender].sub(_value);
       balances[_to] = balances[_to].add(_value);
-      MulTransfer(_tokenId, _sender, _to, _value);
+      Transfer(_tokenId, _sender, _to, _value);
       return true;
     }
 
@@ -153,10 +145,10 @@ contract multiToken is Ownable, multiTokenBasic{
     * @param _value uint256 the amount of tokens to be transferred
     */
 
-    function mulTransferFrom(uint256 _tokenId, address _from, address _to, uint256 _value) existingToken(_tokenId) public returns (bool){
+    function transferFrom(uint256 _tokenId, address _from, address _to, uint256 _value) existingToken(_tokenId) public returns (bool){
       var _sender = msg.sender;
-      var balances = mulBalances[_tokenId];
-      var allowed = mulAllowed[_tokenId];
+      var balances = balance[_tokenId];
+      var allowed = allowed[_tokenId];
       require(_to != address(0));
       require(_value <= balances[_from]);
       require(_value <= allowed[_from][_sender]);
@@ -164,7 +156,7 @@ contract multiToken is Ownable, multiTokenBasic{
       balances[_from] = balances[_from].sub(_value);
       balances[_to] = balances[_to].add(_value);
       allowed[_from][_sender] = allowed[_from][_sender].sub(_value);
-      MulTransfer(_tokenId, _from, _to, _value);
+      Transfer(_tokenId, _from, _to, _value);
       return true;
     }
 
@@ -184,10 +176,10 @@ contract multiToken is Ownable, multiTokenBasic{
 
 
 
-    function mulApprove(uint256 _tokenId, address _spender, uint256 _value) public returns (bool){
+    function approve(uint256 _tokenId, address _spender, uint256 _value) public returns (bool){
       var _sender = msg.sender;
-      mulAllowed[_tokenId][_sender][_spender] = _value;
-      MulApproval(_tokenId, _sender, _spender, _value);
+      allowed[_tokenId][_sender][_spender] = _value;
+      Approval(_tokenId, _sender, _spender, _value);
       return true;
     }
 

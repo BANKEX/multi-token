@@ -136,7 +136,7 @@ contract depositStorage {
     if (_tokenId == 0)
       assert(ERC20(_token).transferFrom(msg.sender, address(this), _value));
     else
-      assert(multiTokenBasics(_token).mulTransferFrom(_tokenId, msg.sender, address(this), _value));
+      assert(multiTokenBasics(_token).transferFrom(_tokenId, msg.sender, address(this), _value));
     depositTimestamp[_token][_tokenId][msg.sender][_depositId] = _timestamp;
     depositValue[_token][_tokenId][msg.sender][_depositId] = _value;
     depositCollected[_token][_tokenId].add(_value);
@@ -155,7 +155,7 @@ contract depositStorage {
     if (_tokenId == 0)
       assert(ERC20(_token).transfer(msg.sender, _value));
     else
-      assert(multiTokenBasics(_token).mulTransfer(_tokenId, msg.sender, _value));
+      assert(multiTokenBasics(_token).transfer(_tokenId, msg.sender, _value));
     ReleaseDeposit(_token, _tokenId, msg.sender, _depositId, _timestamp, _value);
     return true;
   }
