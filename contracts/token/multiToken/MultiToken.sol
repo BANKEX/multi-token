@@ -2,10 +2,10 @@ pragma solidity ^0.4.18;
 
 import "../../math/SafeMath.sol";
 import "../../ownership/Ownable.sol";
-import "./multiTokenBasics.sol";
+import "./MultiTokenBasics.sol";
 
 
-contract multiToken is multiTokenBasics {
+contract MultiToken is MultiTokenBasics {
 	using SafeMath for uint256;
 
 	mapping(uint256 => mapping(address => mapping(address => uint256))) private allowed;

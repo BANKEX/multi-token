@@ -1,7 +1,7 @@
 pragma solidity ^0.4.18;
 
 
-contract multiTokenBasics {
+contract MultiTokenBasics {
 
 	function totalSupply(uint256 _tokenId) public view returns (uint256);
 

@@ -1,11 +1,11 @@
 pragma solidity ^0.4.18;
 
 import "../math/SafeMath.sol";
-import "../token/multiToken/multiTokenBasics.sol";
+import "../token/multiToken/MultiTokenBasics.sol";
 import "../token/ERC20/ERC20.sol";
 
 
-contract depositStorage {
+contract DepositStorage {
 	using SafeMath for uint;
 
 
@@ -44,7 +44,7 @@ contract depositStorage {
 		return true;
 	}
 
-	function depositStorage(address _dividendToken) public {
+	function DepositStorage(address _dividendToken) public {
 		dividendToken = _dividendToken;
 	}
 
@@ -133,7 +133,7 @@ contract depositStorage {
 		if (_tokenId == 0)
 			assert(ERC20(_token).transferFrom(msg.sender, address(this), _value));
 		else
-			assert(multiTokenBasics(_token).transferFrom(_tokenId, msg.sender, address(this), _value));
+			assert(MultiTokenBasics(_token).transferFrom(_tokenId, msg.sender, address(this), _value));
 		depositTimestamp[_token][_tokenId][msg.sender][_depositId] = _timestamp;
 		depositValue[_token][_tokenId][msg.sender][_depositId] = _value;
 		depositCollected[_token][_tokenId].add(_value);
@@ -152,7 +152,7 @@ contract depositStorage {
 		if (_tokenId == 0)
 			assert(ERC20(_token).transfer(msg.sender, _value));
 		else
-			assert(multiTokenBasics(_token).transfer(_tokenId, msg.sender, _value));
+			assert(MultiTokenBasics(_token).transfer(_tokenId, msg.sender, _value));
 		ReleaseDeposit(_token, _tokenId, msg.sender, _depositId, _timestamp, _value);
 		return true;
 	}
