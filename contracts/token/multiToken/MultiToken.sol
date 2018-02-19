@@ -8,10 +8,10 @@ import "./MultiTokenBasics.sol";
 contract MultiToken is Ownable, MultiTokenBasics {
 	using SafeMath for uint256;
 
-	mapping(uint256 => mapping(address => mapping(address => uint256))) public allowed;
-	mapping(uint256 => mapping(address => uint256)) public balance;
-	mapping(uint256 => address) public owner_;
-	mapping(uint256 => uint256) public totalSupply_;
+	mapping(uint256 => mapping(address => mapping(address => uint256))) private allowed;
+	mapping(uint256 => mapping(address => uint256)) private balance;
+	mapping(uint256 => address) private owner_;
+	mapping(uint256 => uint256) private totalSupply_;
 
 
 	uint8 public decimals = 18;
