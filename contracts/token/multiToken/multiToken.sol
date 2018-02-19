@@ -5,7 +5,7 @@ import "../../ownership/Ownable.sol";
 import "./multiTokenBasics.sol";
 
 
-contract multiToken is Ownable, multiTokenBasics{
+contract multiToken is Ownable, multiTokenBasic{
     using SafeMath for uint256;
 
     mapping (uint256 => mapping (address => mapping (address => uint256))) private mulAllowed;
