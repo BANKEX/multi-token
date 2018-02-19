@@ -1,7 +1,7 @@
 pragma solidity ^0.4.18;
 
 import "../math/SafeMath.sol";
-import "../token/multiToken/multiTokenBasic.sol";
+import "../token/multiToken/multiTokenBasics.sol";
 import "../token/ERC20/ERC20.sol";
 
 

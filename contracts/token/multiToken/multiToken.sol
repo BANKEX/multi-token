@@ -5,7 +5,7 @@ import "../../ownership/Ownable.sol";
 import "./multiTokenBasics.sol";
 
 
-contract multiToken is Ownable, multiTokenBasic{
+contract multiToken is multiTokenBasics {
     using SafeMath for uint256;
 
     mapping (uint256 => mapping (address => mapping (address => uint256))) private allowed;
@@ -61,11 +61,11 @@ contract multiToken is Ownable, multiTokenBasic{
     * @return uint256 representing the total amount of tokens
     */
 
-    function mint(uint256 _tokenId, address _to, uint256 _value) notExistingToken(_tokenId) onlyOwner() public returns (bool) {
+    function mint(uint256 _tokenId, address _to, uint256 _value) notExistingToken(_tokenId) onlyOwnerOf(_tokenId) public returns (bool) {
       balance[_tokenId][_to] = _value;
       totalSupply_[_tokenId] = _value;
       owner_[_tokenId] = msg.sender;
-      transfer(_tokenId, address(0), _to, _value);
+      Transfer(_tokenId, address(0), _to, _value);
       return true;
     }
 
@@ -146,16 +146,17 @@ contract multiToken is Ownable, multiTokenBasic{
     */
 
     function transferFrom(uint256 _tokenId, address _from, address _to, uint256 _value) existingToken(_tokenId) public returns (bool){
-      var _sender = msg.sender;
+      address _sender = msg.sender;
       var balances = balance[_tokenId];
-      var allowed = allowed[_tokenId];
+        var tokenAllowed = allowed[_tokenId];
+
       require(_to != address(0));
       require(_value <= balances[_from]);
-      require(_value <= allowed[_from][_sender]);
+      require(_value <= tokenAllowed[_from][_sender]);
 
       balances[_from] = balances[_from].sub(_value);
       balances[_to] = balances[_to].add(_value);
-      allowed[_from][_sender] = allowed[_from][_sender].sub(_value);
+        tokenAllowed[_from][_sender] = tokenAllowed[_from][_sender].sub(_value);
       Transfer(_tokenId, _from, _to, _value);
       return true;
     }
