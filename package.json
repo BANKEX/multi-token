@@ -1,0 +1,21 @@
+{
+  "name": "multi_token",
+  "version": "1.0.0",
+  "description": "",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@git.bankex.team:proof_of_asset/multi_token.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "zeppelin-solidity": "1.6.0"
+  }
+}
