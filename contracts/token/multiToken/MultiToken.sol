@@ -8,10 +8,10 @@ import "./MultiTokenBasics.sol";
 contract MultiToken is Ownable, MultiTokenBasics {
 	using SafeMath for uint256;
 
-	mapping(uint256 => mapping(address => mapping(address => uint256))) private allowed;
-	mapping(uint256 => mapping(address => uint256)) private balance;
-	mapping(uint256 => address) private owner_;
-	mapping(uint256 => uint256) private totalSupply_;
+	mapping(uint256 => mapping(address => mapping(address => uint256))) public allowed;
+	mapping(uint256 => mapping(address => uint256)) public balance;
+	mapping(uint256 => address) public owner_;
+	mapping(uint256 => uint256) public totalSupply_;
 
 
 	uint8 public decimals = 18;
@@ -53,14 +53,14 @@ contract MultiToken is Ownable, MultiTokenBasics {
 
 
 	/**
-    * @dev mint new tokens to current address
+    * @dev create new subtoken with unique tokenId
     * @param _tokenId uint256 is subtoken identifier
     * @param _to The address to transfer to.
     * @param _value The amount to be transferred.
     * @return uint256 representing the total amount of tokens
     */
 
-	function mint(uint256 _tokenId, address _to, uint256 _value) notExistingToken(_tokenId) onlyOwner() public returns (bool) {
+	function createNewSubtoken(uint256 _tokenId, address _to, uint256 _value) notExistingToken(_tokenId) onlyOwner() public returns (bool) {
 		balance[_tokenId][_to] = _value;
 		totalSupply_[_tokenId] = _value;
 		owner_[_tokenId] = msg.sender;
