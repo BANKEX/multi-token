@@ -5,7 +5,7 @@ import "../../ownership/Ownable.sol";
 import "./MultiTokenBasics.sol";
 
 
-contract MultiToken is MultiTokenBasics {
+contract MultiToken is Ownable, MultiTokenBasics {
 	using SafeMath for uint256;
 
 	mapping(uint256 => mapping(address => mapping(address => uint256))) private allowed;
@@ -60,7 +60,7 @@ contract MultiToken is MultiTokenBasics {
     * @return uint256 representing the total amount of tokens
     */
 
-	function mint(uint256 _tokenId, address _to, uint256 _value) notExistingToken(_tokenId) onlyOwnerOf(_tokenId) public returns (bool) {
+	function mint(uint256 _tokenId, address _to, uint256 _value) notExistingToken(_tokenId) onlyOwner() public returns (bool) {
 		balance[_tokenId][_to] = _value;
 		totalSupply_[_tokenId] = _value;
 		owner_[_tokenId] = msg.sender;
