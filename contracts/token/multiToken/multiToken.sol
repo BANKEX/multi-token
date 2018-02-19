@@ -6,54 +6,53 @@ import "./multiTokenBasics.sol";
 
 
 contract multiToken is multiTokenBasics {
-    using SafeMath for uint256;
+	using SafeMath for uint256;
 
-    mapping (uint256 => mapping (address => mapping (address => uint256))) private allowed;
-    mapping (uint256 => mapping(address => uint256)) private balance;
-    mapping (uint256 => address) private owner_;
-    mapping (uint256 => uint256) private totalSupply_;
-
-
-
-    uint8 public decimals = 18;
-    uint256 public mask = 0xffffffff;
+	mapping(uint256 => mapping(address => mapping(address => uint256))) private allowed;
+	mapping(uint256 => mapping(address => uint256)) private balance;
+	mapping(uint256 => address) private owner_;
+	mapping(uint256 => uint256) private totalSupply_;
 
 
+	uint8 public decimals = 18;
+	uint256 public mask = 0xffffffff;
 
-    /**
+
+
+	/**
     * @dev Throws if _tokenId not exists
     * @param _tokenId uint256 is subtoken identifier
     */
 
-    modifier existingToken(uint256 _tokenId) {
-      require(owner_[_tokenId]!=address(0) && (_tokenId & mask == _tokenId));
-      _;
-    }
+	modifier existingToken(uint256 _tokenId) {
+		require(owner_[_tokenId] != address(0) && (_tokenId & mask == _tokenId));
+		_;
+	}
 
-    /**
+	/**
     * @dev Throws if  _tokenId exists
     * @param _tokenId uint256 is subtoken identifier
     */
 
-    modifier notExistingToken(uint256 _tokenId) {
-      require(owner_[_tokenId]==address(0) && (_tokenId & mask == _tokenId));
-      _;
-    }
+	modifier notExistingToken(uint256 _tokenId) {
+		require(owner_[_tokenId] == address(0) && (_tokenId & mask == _tokenId));
+		_;
+	}
 
 
 
-    /**
+	/**
     * @dev Guarantees msg.sender is owner of the given token
     * @param _tokenId uint256 ID of the token to validate its ownership belongs to msg.sender
     */
 
-    modifier onlyOwnerOf(uint256 _tokenId) {
-      require(ownerOf(_tokenId) == msg.sender);
-      _;
-    }
+	modifier onlyOwnerOf(uint256 _tokenId) {
+		require(ownerOf(_tokenId) == msg.sender);
+		_;
+	}
 
 
-    /**
+	/**
     * @dev mint new tokens to current address
     * @param _tokenId uint256 is subtoken identifier
     * @param _to The address to transfer to.
@@ -61,48 +60,48 @@ contract multiToken is multiTokenBasics {
     * @return uint256 representing the total amount of tokens
     */
 
-    function mint(uint256 _tokenId, address _to, uint256 _value) notExistingToken(_tokenId) onlyOwnerOf(_tokenId) public returns (bool) {
-      balance[_tokenId][_to] = _value;
-      totalSupply_[_tokenId] = _value;
-      owner_[_tokenId] = msg.sender;
-      Transfer(_tokenId, address(0), _to, _value);
-      return true;
-    }
+	function mint(uint256 _tokenId, address _to, uint256 _value) notExistingToken(_tokenId) onlyOwnerOf(_tokenId) public returns (bool) {
+		balance[_tokenId][_to] = _value;
+		totalSupply_[_tokenId] = _value;
+		owner_[_tokenId] = msg.sender;
+		Transfer(_tokenId, address(0), _to, _value);
+		return true;
+	}
 
 
-    /**
+	/**
     * @dev Gets the total amount of tokens stored by the contract
     * @param _tokenId uint256 is subtoken identifier
     * @return uint256 representing the total amount of tokens
     */
 
-    function totalSupply(uint256 _tokenId) existingToken(_tokenId) public view returns (uint256) {
-      return totalSupply_[_tokenId];
-    }
+	function totalSupply(uint256 _tokenId) existingToken(_tokenId) public view returns (uint256) {
+		return totalSupply_[_tokenId];
+	}
 
-    /**
+	/**
     * @dev Gets the balance of the specified address
     * @param _tokenId uint256 is subtoken identifier
     * @param _owner address to query the balance of
     * @return uint256 representing the amount owned by the passed address
     */
 
-    function balanceOf(uint256 _tokenId, address _owner) existingToken(_tokenId) public view returns (uint256) {
-      return balance[_tokenId][_owner];
-    }
+	function balanceOf(uint256 _tokenId, address _owner) existingToken(_tokenId) public view returns (uint256) {
+		return balance[_tokenId][_owner];
+	}
 
 
-    /**
+	/**
     * @dev Gets the owner of the specified token ID
     * @param _tokenId uint256 is subtoken identifier
     * @return owner address currently marked as the owner of the given token ID
     */
 
-    function ownerOf(uint256 _tokenId) existingToken(_tokenId) public view returns (address) {
-      return owner_[_tokenId];
-    }
+	function ownerOf(uint256 _tokenId) existingToken(_tokenId) public view returns (address) {
+		return owner_[_tokenId];
+	}
 
-    /**
+	/**
     * @dev Function to check the amount of tokens that an owner allowed to a spender.
     * @param _tokenId uint256 is subtoken identifier
     * @param _owner address The address which owns the funds.
@@ -110,34 +109,34 @@ contract multiToken is multiTokenBasics {
     * @return A uint256 specifying the amount of tokens still available for the spender.
     */
 
-    function allowance(uint256 _tokenId, address _owner, address _spender) existingToken(_tokenId) public view returns (uint256) {
-      return allowed[_tokenId][_owner][_spender];
-    }
+	function allowance(uint256 _tokenId, address _owner, address _spender) existingToken(_tokenId) public view returns (uint256) {
+		return allowed[_tokenId][_owner][_spender];
+	}
 
 
 
-    /**
+	/**
     * @dev transfer token for a specified address
     * @param _tokenId uint256 is subtoken identifier
     * @param _to The address to transfer to.
     * @param _value The amount to be transferred.
     */
 
-    function transfer(uint256 _tokenId, address _to, uint256 _value) existingToken(_tokenId) public returns (bool){
-      var _sender = msg.sender;
-      var balances = balance[_tokenId];
-      require(_to != address(0));
-      require(_value <= balances[_sender]);
+	function transfer(uint256 _tokenId, address _to, uint256 _value) existingToken(_tokenId) public returns (bool){
+		var _sender = msg.sender;
+		var balances = balance[_tokenId];
+		require(_to != address(0));
+		require(_value <= balances[_sender]);
 
-      // SafeMath.sub will throw if there is not enough balance.
-      balances[_sender] = balances[_sender].sub(_value);
-      balances[_to] = balances[_to].add(_value);
-      Transfer(_tokenId, _sender, _to, _value);
-      return true;
-    }
+		// SafeMath.sub will throw if there is not enough balance.
+		balances[_sender] = balances[_sender].sub(_value);
+		balances[_to] = balances[_to].add(_value);
+		Transfer(_tokenId, _sender, _to, _value);
+		return true;
+	}
 
 
-    /**
+	/**
     * @dev Transfer tokens from one address to another
     * @param _tokenId uint256 is subtoken identifier
     * @param _from address The address which you want to send tokens from
@@ -145,25 +144,25 @@ contract multiToken is multiTokenBasics {
     * @param _value uint256 the amount of tokens to be transferred
     */
 
-    function transferFrom(uint256 _tokenId, address _from, address _to, uint256 _value) existingToken(_tokenId) public returns (bool){
-      address _sender = msg.sender;
-      var balances = balance[_tokenId];
-        var tokenAllowed = allowed[_tokenId];
+	function transferFrom(uint256 _tokenId, address _from, address _to, uint256 _value) existingToken(_tokenId) public returns (bool){
+		address _sender = msg.sender;
+		var balances = balance[_tokenId];
+		var tokenAllowed = allowed[_tokenId];
 
-      require(_to != address(0));
-      require(_value <= balances[_from]);
-      require(_value <= tokenAllowed[_from][_sender]);
+		require(_to != address(0));
+		require(_value <= balances[_from]);
+		require(_value <= tokenAllowed[_from][_sender]);
 
-      balances[_from] = balances[_from].sub(_value);
-      balances[_to] = balances[_to].add(_value);
-        tokenAllowed[_from][_sender] = tokenAllowed[_from][_sender].sub(_value);
-      Transfer(_tokenId, _from, _to, _value);
-      return true;
-    }
+		balances[_from] = balances[_from].sub(_value);
+		balances[_to] = balances[_to].add(_value);
+		tokenAllowed[_from][_sender] = tokenAllowed[_from][_sender].sub(_value);
+		Transfer(_tokenId, _from, _to, _value);
+		return true;
+	}
 
 
 
-    /**
+	/**
     * @dev Approve the passed address to spend the specified amount of tokens on behalf of msg.sender.
     *
     * Beware that changing an allowance with this method brings the risk that someone may use both the old
@@ -177,18 +176,12 @@ contract multiToken is multiTokenBasics {
 
 
 
-    function approve(uint256 _tokenId, address _spender, uint256 _value) public returns (bool){
-      var _sender = msg.sender;
-      allowed[_tokenId][_sender][_spender] = _value;
-      Approval(_tokenId, _sender, _spender, _value);
-      return true;
-    }
-
-
-
-
-
-
+	function approve(uint256 _tokenId, address _spender, uint256 _value) public returns (bool){
+		var _sender = msg.sender;
+		allowed[_tokenId][_sender][_spender] = _value;
+		Approval(_tokenId, _sender, _spender, _value);
+		return true;
+	}
 
 
 }
