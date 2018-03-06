@@ -16,6 +16,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bignumber.js": "^6.0.0",
     "ethereumjs-util": "^5.1.4",
     "zeppelin-solidity": "1.6.0"
   }

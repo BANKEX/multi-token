@@ -10,7 +10,6 @@ contract MultiToken is Ownable, MultiTokenBasics {
 
 	mapping(uint256 => mapping(address => mapping(address => uint256))) private allowed;
 	mapping(uint256 => mapping(address => uint256)) private balance;
-	mapping(uint256 => address) private owner_;
 	mapping(uint256 => uint256) private totalSupply_;
 
 
@@ -25,7 +24,7 @@ contract MultiToken is Ownable, MultiTokenBasics {
     */
 
 	modifier existingToken(uint256 _tokenId) {
-		require(owner_[_tokenId] != address(0) && (_tokenId & mask == _tokenId));
+		require(totalSupply_[_tokenId] > 0 && (_tokenId & mask == _tokenId));
 		_;
 	}
 
@@ -35,21 +34,12 @@ contract MultiToken is Ownable, MultiTokenBasics {
     */
 
 	modifier notExistingToken(uint256 _tokenId) {
-		require(owner_[_tokenId] == address(0) && (_tokenId & mask == _tokenId));
+		require(totalSupply_[_tokenId] == 0 && (_tokenId & mask == _tokenId));
 		_;
 	}
 
 
 
-	/**
-    * @dev Guarantees msg.sender is owner of the given token
-    * @param _tokenId uint256 ID of the token to validate its ownership belongs to msg.sender
-    */
-
-	modifier onlyOwnerOf(uint256 _tokenId) {
-		require(ownerOf(_tokenId) == msg.sender);
-		_;
-	}
 
 
 	/**
@@ -61,9 +51,9 @@ contract MultiToken is Ownable, MultiTokenBasics {
     */
 
 	function createNewSubtoken(uint256 _tokenId, address _to, uint256 _value) notExistingToken(_tokenId) onlyOwner() public returns (bool) {
+		require(_value > 0);
 		balance[_tokenId][_to] = _value;
 		totalSupply_[_tokenId] = _value;
-		owner_[_tokenId] = msg.sender;
 		Transfer(_tokenId, address(0), _to, _value);
 		return true;
 	}
@@ -91,15 +81,6 @@ contract MultiToken is Ownable, MultiTokenBasics {
 	}
 
 
-	/**
-    * @dev Gets the owner of the specified token ID
-    * @param _tokenId uint256 is subtoken identifier
-    * @return owner address currently marked as the owner of the given token ID
-    */
-
-	function ownerOf(uint256 _tokenId) existingToken(_tokenId) public view returns (address) {
-		return owner_[_tokenId];
-	}
 
 	/**
     * @dev Function to check the amount of tokens that an owner allowed to a spender.
@@ -123,6 +104,7 @@ contract MultiToken is Ownable, MultiTokenBasics {
     */
 
 	function transfer(uint256 _tokenId, address _to, uint256 _value) existingToken(_tokenId) public returns (bool){
+		require(_to != address(0));
 		var _sender = msg.sender;
 		var balances = balance[_tokenId];
 		require(_to != address(0));
@@ -145,17 +127,17 @@ contract MultiToken is Ownable, MultiTokenBasics {
     */
 
 	function transferFrom(uint256 _tokenId, address _from, address _to, uint256 _value) existingToken(_tokenId) public returns (bool){
-		address sender = msg.sender;
+		address _sender = msg.sender;
 		var balances = balance[_tokenId];
 		var tokenAllowed = allowed[_tokenId];
 
 		require(_to != address(0));
 		require(_value <= balances[_from]);
-		require(_value <= tokenAllowed[_from][sender]);
+		require(_value <= tokenAllowed[_from][_sender]);
 
 		balances[_from] = balances[_from].sub(_value);
 		balances[_to] = balances[_to].add(_value);
-		tokenAllowed[_from][sender] = tokenAllowed[_from][sender].sub(_value);
+		tokenAllowed[_from][_sender] = tokenAllowed[_from][_sender].sub(_value);
 		Transfer(_tokenId, _from, _to, _value);
 		return true;
 	}

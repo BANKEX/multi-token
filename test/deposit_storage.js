@@ -12,7 +12,7 @@ const expectThrow = require('../helpers/expectThrow');
 
 
 contract('DepositStorage', (accounts) => {
-
+/*
     before(async () => {
 
         const SafeMathInstance = await SafeMath.new();
@@ -80,6 +80,6 @@ contract('DepositStorage', (accounts) => {
 
 
     })
-
+*/
 
 })

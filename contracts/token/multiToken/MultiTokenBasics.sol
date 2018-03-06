@@ -7,8 +7,6 @@ contract MultiTokenBasics {
 
 	function balanceOf(uint256 _tokenId, address _owner) public view returns (uint256);
 
-	function ownerOf(uint256 _tokenId) public view returns (address);
-
 	function allowance(uint256 _tokenId, address _owner, address _spender) public view returns (uint256);
 
 	function transfer(uint256 _tokenId, address _to, uint256 _value) public returns (bool);

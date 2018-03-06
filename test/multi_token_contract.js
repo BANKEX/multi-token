@@ -1,6 +1,9 @@
+//const {_binaryOperators, _unaryOperators} = require('op-overload');
+
 const MultiToken = artifacts.require('MultiToken');
 const SafeMath = artifacts.require('SafeMath');
 
+const BigNumber = require('bignumber.js').BigNumber;
 
 
 
@@ -23,7 +26,7 @@ contract('MultiToken', (accounts) => {
 
 			// check created contract owner
 			const contractOwner = await multiTokenInstance.owner();
-			assert(contractOwner === accounts[0], 'Invalid contract owner');
+			assert(contractOwner == accounts[0], 'Invalid contract owner');
 		} catch(e) {
 			console.log(e);
 			assert(false, 'MultiToken contract has not created');
@@ -45,8 +48,6 @@ contract('MultiToken', (accounts) => {
 				from: sender
 			});
 
-			// owner of created subtoken should be sender of transaction
-			assert(sender === await MULTI_TOKEN_INSTANCE.ownerOf(tokenId), 'Invalid token owner');
 
 			// subtoken totalSupply should increase
 			assert((await MULTI_TOKEN_INSTANCE.totalSupply(tokenId)).eq(new web3.BigNumber(tokensAmount)), 'Invalid total supply')
@@ -59,6 +60,28 @@ contract('MultiToken', (accounts) => {
 		}
 	});
 
+	/*it('should make transactions from one wallet to another', async () => {
+		const sender = accounts[0];
+		const tokenId = 1;
+		const tokensAmount = new BigNumber(web3.toWei('1000000', 'ether'));
+		const transferAmount = new BigNumber(web3.toWei('10', 'ether'));
+
+		const toAddress = accounts[1];
+
+		await createNewSubtoken({
+			tokenId: tokenId,
+			toAddress: accounts[0],
+			tokensAmount: tokensAmount
+		}, {
+			from: sender
+		});
+		for (let i = 1; i<10; i++)
+			MULTI_TOKEN_INSTANCE.transfer(tokenId, accounts[1], transferAmount);
+		assert((await MULTI_TOKEN_INSTANCE.balanceOf(tokenId, accounts[1])).eq(transferAmount.multipliedBy(10).toFixed()), 'Invalid balance after token transfer at receiver.');
+		assert((await MULTI_TOKEN_INSTANCE.balanceOf(tokenId, accounts[0])).eq(tokensAmount.minus(transferAmount.multipliedBy(10)).toFixed()), 'Invalid balance after token transfer at sender.');
+
+	});*/
+
 	it('should throw an exception if try to create a new subtoken from non-admin account', async () => {
 		try {
 			const sender = accounts[1];
@@ -67,14 +90,13 @@ contract('MultiToken', (accounts) => {
 			const toAddress = accounts[1];
 
 
-			await createNewSubtoken({
+			assert((await createNewSubtoken({
 				tokenId: tokenId,
 				toAddress: toAddress,
 				tokensAmount: tokensAmount
 			}, {
 				from: sender
-			});
-
+			})).receipt.status === "0x01", 'Exception while processing transaction: revert');
 			assert(false, 'Subtoken has created from non-admin account');
 		} catch(e) {
 			const reverted = e.message.search('Exception while processing transaction: revert') !== -1;
@@ -90,7 +112,7 @@ contract('MultiToken', (accounts) => {
 			await createNewSubtoken({tokenId: tokenId});
 
 			// create one more subtoken with the same id
-			await createNewSubtoken({tokenId: tokenId});
+			assert((await createNewSubtoken({tokenId: tokenId})).receipt.status === "0x01", 'Exception while processing transaction: revert');
 
 			assert(false, 'Subtoken with the same id has created');
 		} catch(e) {
@@ -171,9 +193,9 @@ contract('MultiToken', (accounts) => {
 		});
 
 		try {
-			await MULTI_TOKEN_INSTANCE.transferFrom(tokenId, owner, moveToAddress, new web3.BigNumber(amount).add('10'), {
+			assert((await MULTI_TOKEN_INSTANCE.transferFrom(tokenId, owner, moveToAddress, new web3.BigNumber(amount).add('10'), {
 				from: spender
-			});
+			})).receipt.status === "0x01", 'Exception while processing transaction: revert');
 
 			assert(false, 'Transfered more than allowed');
 
@@ -233,9 +255,9 @@ contract('MultiToken', (accounts) => {
 		});
 
 		try {
-			await MULTI_TOKEN_INSTANCE.transfer(tokenId, recipient, submitAmount, {
+			assert((await MULTI_TOKEN_INSTANCE.transfer(tokenId, recipient, submitAmount, {
 				from: sender
-			});
+			})).receipt.status === "0x01", 'Exception while processing transaction: revert');
 
 			assert(false, 'Transfer to 0x0 address');
 		} catch(e) {
@@ -261,9 +283,9 @@ contract('MultiToken', (accounts) => {
 		});
 
 		try {
-			await MULTI_TOKEN_INSTANCE.transfer(tokenId, recipient, submitAmount, {
+			assert((await MULTI_TOKEN_INSTANCE.transfer(tokenId, recipient, submitAmount, {
 				from: sender
-			});
+			})).receipt.status === "0x01", 'Exception while processing transaction: revert');
 
 			assert(false, 'Transfer more than sender balance');
 		} catch(e) {
@@ -286,8 +308,3 @@ contract('MultiToken', (accounts) => {
 
 
 });
-
-
-
-
-
