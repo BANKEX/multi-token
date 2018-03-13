@@ -10,8 +10,8 @@ contract DepositStorage {
 
 
 
-	uint constant tokenSize = 10 ** 18;
-	uint constant updatePeriod = 691200 * 7;
+	uint constant TOKEN_SIZE = 10 ** 18;
+	uint constant UPDATE_PERIOD = 3600*24;
 
 
 	address dividendToken;
@@ -23,21 +23,21 @@ contract DepositStorage {
 	mapping(address => mapping(uint => mapping(uint => uint))) dividendPerTokenHistory;
 	mapping(address => mapping(uint => uint)) lastUpdatePeriod;
 
-	function updateState(address _token, uint _tokenId) private returns (bool){
+	function updateState(address _token, uint _tokenId) private returns (bool) {
 		uint _timestamp = currentPeriod();
 		if (lastUpdatePeriod[_token][_tokenId] == 0)
 			lastUpdatePeriod[_token][_tokenId] = _timestamp;
 		uint _t = lastUpdatePeriod[_token][_tokenId];
 		if (_t < _timestamp) {
 			if (dividendCollected[_token][_tokenId] != 0) {
-				dividendPerTokenHistory[_token][_tokenId][_t] = dividendPerTokenHistory[_token][_tokenId][_t - 1] + depositCollected[_token][_tokenId] * tokenSize / dividendCollected[_token][_tokenId];
+				dividendPerTokenHistory[_token][_tokenId][_t] = dividendPerTokenHistory[_token][_tokenId][_t - 1] + depositCollected[_token][_tokenId] * TOKEN_SIZE / dividendCollected[_token][_tokenId];
 				dividendCollected[_token][_tokenId] = 0;
-				_t += updatePeriod;
+				_t += UPDATE_PERIOD;
 			}
 
 			while (_t < _timestamp) {
 				dividendPerTokenHistory[_token][_tokenId][_t] = dividendPerTokenHistory[_token][_tokenId][_t - 1];
-				_t += updatePeriod;
+				_t += UPDATE_PERIOD;
 			}
 			lastUpdatePeriod[_token][_tokenId] = _timestamp;
 		}
@@ -80,20 +80,20 @@ contract DepositStorage {
 	}
 
 	function currentPeriod() private view returns (uint) {
-		return now - now % updatePeriod;
+		return now - now % UPDATE_PERIOD;
 	}
 
 
-	function acceptDividend(address _token, uint _tokenId, uint _value) dividendTokenNotZero() notDividendToken(_token) public returns (bool){
+	function acceptDividend(address _token, uint _tokenId, uint _value) dividendTokenNotZero() notDividendToken(_token) public returns (bool) {
 		uint _timestamp = currentPeriod();
 		if (_timestamp > lastUpdatePeriod[_token][_tokenId])
 			updateState(_token, _tokenId);
-		assert(ERC20(dividendToken).transferFrom(msg.sender, address(this), _value));
+		require(ERC20(dividendToken).transferFrom(msg.sender, address(this), _value));
 		dividendCollected[_token][_tokenId] = dividendCollected[_token][_tokenId].add(_value);
 		return true;
 	}
 
-	function acceptDividendEth(address _token, uint _tokenId) dividendTokenZero() payable public returns (bool){
+	function acceptDividendEth(address _token, uint _tokenId) dividendTokenZero() payable public returns (bool) {
 		uint _timestamp = currentPeriod();
 		if (_timestamp > lastUpdatePeriod[_token][_tokenId])
 			updateState(_token, _tokenId);
@@ -101,26 +101,26 @@ contract DepositStorage {
 		return true;
 	}
 
-	function releaseDividend(address _token, uint _tokenId, uint _depositId) notDividendToken(_token) dividendTokenNotZero() existingDeposit(_token, _tokenId, _depositId) public returns (bool){
+	function releaseDividend(address _token, uint _tokenId, uint _depositId) notDividendToken(_token) dividendTokenNotZero() existingDeposit(_token, _tokenId, _depositId) public returns (bool) {
 		uint _timestamp = currentPeriod();
 		if (_timestamp > lastUpdatePeriod[_token][_tokenId])
 			updateState(_token, _tokenId);
 		uint _depositTimestamp = depositTimestamp[_token][_tokenId][msg.sender][_depositId];
 		uint _dividendPerToken = dividendPerTokenHistory[_token][_tokenId][_timestamp].sub(dividendPerTokenHistory[_token][_tokenId][_depositTimestamp]);
-		uint _value = _dividendPerToken.mul(depositValue[_token][_tokenId][msg.sender][_depositId]) / tokenSize;
+		uint _value = _dividendPerToken.mul(depositValue[_token][_tokenId][msg.sender][_depositId]) / TOKEN_SIZE;
 		depositTimestamp[_token][_tokenId][msg.sender][_depositId] = _timestamp;
-		assert(ERC20(dividendToken).transfer(msg.sender, _value));
+		require(ERC20(dividendToken).transfer(msg.sender, _value));
 		return true;
 	}
 
-	function releaseDividendEth(address _token, uint _tokenId, uint _depositId) dividendTokenZero() existingDeposit(_token, _tokenId, _depositId) payable public returns (bool){
+	function releaseDividendEth(address _token, uint _tokenId, uint _depositId) dividendTokenZero() existingDeposit(_token, _tokenId, _depositId) payable public returns (bool) {
 		require(msg.value == 0);
 		uint _timestamp = currentPeriod();
 		if (_timestamp > lastUpdatePeriod[_token][_tokenId])
 			updateState(_token, _tokenId);
 		uint _depositTimestamp = depositTimestamp[_token][_tokenId][msg.sender][_depositId];
 		uint _dividendPerToken = dividendPerTokenHistory[_token][_tokenId][_timestamp].sub(dividendPerTokenHistory[_token][_tokenId][_depositTimestamp]);
-		uint _value = _dividendPerToken.mul(depositValue[_token][_tokenId][msg.sender][_depositId]) / tokenSize;
+		uint _value = _dividendPerToken.mul(depositValue[_token][_tokenId][msg.sender][_depositId]) / TOKEN_SIZE;
 		depositTimestamp[_token][_tokenId][msg.sender][_depositId] = _timestamp;
 		msg.sender.transfer(_value);
 		return true;
@@ -131,9 +131,9 @@ contract DepositStorage {
 		if (_timestamp > lastUpdatePeriod[_token][_tokenId])
 			updateState(_token, _tokenId);
 		if (_tokenId == 0)
-			assert(ERC20(_token).transferFrom(msg.sender, address(this), _value));
+			require(ERC20(_token).transferFrom(msg.sender, address(this), _value));
 		else
-			assert(MultiTokenBasics(_token).transferFrom(_tokenId, msg.sender, address(this), _value));
+			require(MultiTokenBasics(_token).transferFrom(_tokenId, msg.sender, address(this), _value));
 		depositTimestamp[_token][_tokenId][msg.sender][_depositId] = _timestamp;
 		depositValue[_token][_tokenId][msg.sender][_depositId] = _value;
 		depositCollected[_token][_tokenId].add(_value);
@@ -150,9 +150,9 @@ contract DepositStorage {
 		delete depositTimestamp[_token][_tokenId][msg.sender][_depositId];
 		depositCollected[_token][_tokenId].sub(_value);
 		if (_tokenId == 0)
-			assert(ERC20(_token).transfer(msg.sender, _value));
+			require(ERC20(_token).transfer(msg.sender, _value));
 		else
-			assert(MultiTokenBasics(_token).transfer(_tokenId, msg.sender, _value));
+			require(MultiTokenBasics(_token).transfer(_tokenId, msg.sender, _value));
 		ReleaseDeposit(_token, _tokenId, msg.sender, _depositId, _timestamp, _value);
 		return true;
 	}

@@ -103,7 +103,7 @@ contract MultiToken is Ownable, MultiTokenBasics {
     * @param _value The amount to be transferred.
     */
 
-	function transfer(uint256 _tokenId, address _to, uint256 _value) existingToken(_tokenId) public returns (bool){
+	function transfer(uint256 _tokenId, address _to, uint256 _value) existingToken(_tokenId) public returns (bool) {
 		require(_to != address(0));
 		var _sender = msg.sender;
 		var balances = balance[_tokenId];
@@ -126,7 +126,7 @@ contract MultiToken is Ownable, MultiTokenBasics {
     * @param _value uint256 the amount of tokens to be transferred
     */
 
-	function transferFrom(uint256 _tokenId, address _from, address _to, uint256 _value) existingToken(_tokenId) public returns (bool){
+	function transferFrom(uint256 _tokenId, address _from, address _to, uint256 _value) existingToken(_tokenId) public returns (bool) {
 		address _sender = msg.sender;
 		var balances = balance[_tokenId];
 		var tokenAllowed = allowed[_tokenId];
@@ -158,7 +158,7 @@ contract MultiToken is Ownable, MultiTokenBasics {
 
 
 
-	function approve(uint256 _tokenId, address _spender, uint256 _value) public returns (bool){
+	function approve(uint256 _tokenId, address _spender, uint256 _value) public returns (bool) {
 		var _sender = msg.sender;
 		allowed[_tokenId][_sender][_spender] = _value;
 		Approval(_tokenId, _sender, _spender, _value);
