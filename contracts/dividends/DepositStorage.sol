@@ -6,15 +6,14 @@ import "../token/ERC20/ERC20.sol";
 
 
 contract DepositStorage {
+
 	using SafeMath for uint;
-
-
 
 	uint constant TOKEN_SIZE = 10 ** 18;
 	uint constant UPDATE_PERIOD = 3600*24;
 
-
 	address dividendToken;
+
 	mapping(address => mapping(uint => mapping(address => mapping(uint => uint)))) public depositTimestamp;
 	mapping(address => mapping(uint => mapping(address => mapping(uint => uint)))) public depositValue;
 
@@ -136,24 +135,37 @@ contract DepositStorage {
 			require(MultiTokenBasics(_token).transferFrom(_tokenId, msg.sender, address(this), _value));
 		depositTimestamp[_token][_tokenId][msg.sender][_depositId] = _timestamp;
 		depositValue[_token][_tokenId][msg.sender][_depositId] = _value;
-		depositCollected[_token][_tokenId].add(_value);
+
+		depositCollected[_token][_tokenId] += _value;
+
 		AcceptDeposit(_token, _tokenId, msg.sender, _depositId, _timestamp, _value);
 		return true;
 	}
 
-	function releaseDeposit(address _token, uint _tokenId, uint _depositId) notDividendToken(_token) existingDeposit(_token, _tokenId, _depositId) public returns (bool) {
+	function releaseDeposit(address _token, uint _tokenId, uint _depositId)
+		notDividendToken(_token)
+		existingDeposit(_token, _tokenId, _depositId)
+		public returns (bool) {
+
 		uint _timestamp = currentPeriod();
+
 		if (_timestamp > lastUpdatePeriod[_token][_tokenId])
 			updateState(_token, _tokenId);
+
 		uint _value = depositValue[_token][_tokenId][msg.sender][_depositId];
+
 		delete depositValue[_token][_tokenId][msg.sender][_depositId];
 		delete depositTimestamp[_token][_tokenId][msg.sender][_depositId];
-		depositCollected[_token][_tokenId].sub(_value);
+
+		depositCollected[_token][_tokenId] -= _value;
+
 		if (_tokenId == 0)
 			require(ERC20(_token).transfer(msg.sender, _value));
 		else
 			require(MultiTokenBasics(_token).transfer(_tokenId, msg.sender, _value));
+
 		ReleaseDeposit(_token, _tokenId, msg.sender, _depositId, _timestamp, _value);
+
 		return true;
 	}
 }

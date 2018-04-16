@@ -9,20 +9,45 @@ const zero           = eu.zeroAddress()
 
 const expectThrow = require('../helpers/expectThrow');
 
+const is_ok = tx => !!tx.receipt && tx.receipt.status === '0x01'
 
+const is_reverted = e => e.toString().indexOf('VM Exception while processing transaction: revert') !== -1
+
+const BigNumber = require('bignumber.js').BigNumber;
+
+const bn = v => new BigNumber(v)
+
+/*
+const Web3 = require('web3');
+const web3 = new Web3();
+
+web3.setProvider('http://127.0.0.1:8545')
+
+//ganache hacks
+web3.extend({
+    property: 'evm',
+    methods: [{
+        name: 'increaseTime',
+        call: 'evm_increaseTime',
+        params: 1,
+        inputFormatter: [null]
+    },{
+        name: 'mine',
+        call: 'evm_mine'
+    }]
+})
+
+//*/
 
 contract('DepositStorage', (accounts) => {
-/*
+///*
+
     before(async () => {
 
         const SafeMathInstance = await SafeMath.new();
         await DepositStorage.link('SafeMath', SafeMathInstance.address)
         // await ERC20.link('SafeMath', SafeMathInstance.address)
     })
-
-    // beforeEach(async () => {
-    //     _contract = await DepositStorage.new(eu.zeroAddress());
-    // })
 
 
     it('should throw exception if created without arguments', (done)=> {
@@ -42,23 +67,28 @@ contract('DepositStorage', (accounts) => {
         await token.mint(accounts[0], val)
         await token.approve(ds.address, val)
 
-        const success = await ds.acceptDeposit.call(token.address, 0, deposit_id, val)
+        assert(is_ok(await ds.acceptDeposit(token.address, 0, deposit_id, val)))
 
-        assert(success)
+        await token.mint(accounts[0], val)
+        await token.approve(ds.address, val)
 
-        // await token.mint(accounts[0], val)
-        // await token.approve(ds.address, val)
+        try {
 
-        // no double deposit
-        ds.acceptDeposit.call(token.address, 0, deposit_id, val).catch(e=>{
+            await ds.acceptDeposit(token.address, 0, deposit_id, val)
+            assert(false, 'Double deposit')
 
-            console.log('catch');
-        })
+        } catch (e) {
+
+            assert(is_reverted(e), 'no revert of double deposit')
+        }
+
+        const sum = await ds.depositCollected(token.address, 0)
+
+        assert(bn(val).eq(sum), `wrong depositCollected: expected ${val} got ${sum.toString()}`);
 
     })
 
-
-    it('should release deposit', async ()=> {
+    it('should release deposit of erc20', async ()=> {
 
         const token = await Token.new()
         const ds    = await DepositStorage.new(zero)
@@ -70,16 +100,16 @@ contract('DepositStorage', (accounts) => {
         await token.mint(accounts[0], val)
         await token.approve(ds.address, val)
 
-        await ds.acceptDeposit.call(token.address, 0, deposit_id, val)
+        await ds.acceptDeposit( token.address, 0, deposit_id, val)
+        await ds.releaseDeposit(token.address, 0, deposit_id)
 
-        const v = await ds.releaseDeposit.call(token.address, 0, deposit_id)
+        const released = await token.balanceOf(accounts[0])
 
-        // console.log(v);
+        assert(bn(val).eq(released), `wrong amount returned from deposit: expected ${val} got ${released.toString()}`);
 
-        // assert(token.balanceOf(accounts[0]), val)
-
+        assert(bn(0).eq(await ds.depositCollected(token.address, 0)) , 'deposit sum not reduced');
 
     })
-*/
 
+//*/
 })
