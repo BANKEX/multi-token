@@ -17,7 +17,7 @@ contract DepositStorage {
 	mapping(address => mapping(uint => mapping(address => mapping(uint => uint)))) public depositTimestamp;
 	mapping(address => mapping(uint => mapping(address => mapping(uint => uint)))) public depositValue;
 
-	mapping(address => mapping(uint => uint)) depositCollected;
+	mapping(address => mapping(uint => uint)) public depositCollected;
 	mapping(address => mapping(uint => uint)) dividendCollected;
 	mapping(address => mapping(uint => mapping(uint => uint))) dividendPerTokenHistory;
 	mapping(address => mapping(uint => uint)) lastUpdatePeriod;
