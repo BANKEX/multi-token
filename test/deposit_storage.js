@@ -42,13 +42,17 @@ web3.extend({
 contract('DepositStorage', (accounts) => {
 ///*
 
+    const me = accounts[0]
+
     before(async () => {
 
-        const SafeMathInstance = await SafeMath.new();
+        const SafeMathInstance = await SafeMath.new()
         await DepositStorage.link('SafeMath', SafeMathInstance.address)
+        await MultiToken.link(    'SafeMath', SafeMathInstance.address)
         // await ERC20.link('SafeMath', SafeMathInstance.address)
     })
 
+///*
 
     it('should throw exception if created without arguments', (done)=> {
 
@@ -64,12 +68,12 @@ contract('DepositStorage', (accounts) => {
 
         const val = 100
 
-        await token.mint(accounts[0], val)
+        await token.mint(me, val)
         await token.approve(ds.address, val)
 
         assert(is_ok(await ds.acceptDeposit(token.address, 0, deposit_id, val)))
 
-        await token.mint(accounts[0], val)
+        await token.mint(me, val)
         await token.approve(ds.address, val)
 
         try {
@@ -97,17 +101,41 @@ contract('DepositStorage', (accounts) => {
 
         const val = 100
 
-        await token.mint(accounts[0], val)
+        await token.mint(me, val)
         await token.approve(ds.address, val)
 
         await ds.acceptDeposit( token.address, 0, deposit_id, val)
         await ds.releaseDeposit(token.address, 0, deposit_id)
 
-        const released = await token.balanceOf(accounts[0])
+        const released = await token.balanceOf(me)
 
         assert(bn(val).eq(released), `wrong amount returned from deposit: expected ${val} got ${released.toString()}`);
 
         assert(bn(0).eq(await ds.depositCollected(token.address, 0)) , 'deposit sum not reduced');
+
+    })
+
+    it('should accept and release funds in Multi Token', async ()=>{
+
+        const multitoken = await MultiToken.new()
+        const ds         = await DepositStorage.new(zero)
+
+        const deposit_id = Math.floor(Math.random()*10000)
+
+        const val = 200
+        const subtoken   = Math.floor(Math.random()*1024)
+
+        await multitoken.createNewSubtoken(subtoken, me, val)
+        await multitoken.approve(subtoken, ds.address, val)
+
+        await ds.acceptDeposit( multitoken.address, subtoken, deposit_id, val)
+        await ds.releaseDeposit(multitoken.address, subtoken, deposit_id)
+
+        const released = await multitoken.balanceOf(subtoken, me)
+
+        assert(bn(val).eq(released), `wrong amount returned from deposit: expected ${val} got ${released.toString()}`);
+
+        assert(bn(0).eq(await ds.depositCollected(multitoken.address, subtoken)) , 'deposit sum not reduced');
 
     })
 
