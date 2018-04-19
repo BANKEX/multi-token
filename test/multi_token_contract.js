@@ -293,7 +293,6 @@ contract('MultiToken', (accounts) => {
 			assert(reverted, 'Invalid exception message');
 		}
 
-
 	});
 
 

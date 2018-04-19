@@ -23,19 +23,25 @@ contract DepositStorage {
 	mapping(address => mapping(uint => uint)) lastUpdatePeriod;
 
 	function updateState(address _token, uint _tokenId) private returns (bool) {
+
 		uint _timestamp = currentPeriod();
+
 		if (lastUpdatePeriod[_token][_tokenId] == 0)
 			lastUpdatePeriod[_token][_tokenId] = _timestamp;
+
 		uint _t = lastUpdatePeriod[_token][_tokenId];
+
 		if (_t < _timestamp) {
+
 			if (dividendCollected[_token][_tokenId] != 0) {
-				dividendPerTokenHistory[_token][_tokenId][_t] = dividendPerTokenHistory[_token][_tokenId][_t - 1] + depositCollected[_token][_tokenId] * TOKEN_SIZE / dividendCollected[_token][_tokenId];
+
+				dividendPerTokenHistory[_token][_tokenId][_t] = dividendPerTokenHistory[_token][_tokenId][_t - UPDATE_PERIOD] + depositCollected[_token][_tokenId] * TOKEN_SIZE / dividendCollected[_token][_tokenId];
 				dividendCollected[_token][_tokenId] = 0;
 				_t += UPDATE_PERIOD;
 			}
 
 			while (_t < _timestamp) {
-				dividendPerTokenHistory[_token][_tokenId][_t] = dividendPerTokenHistory[_token][_tokenId][_t - 1];
+				dividendPerTokenHistory[_token][_tokenId][_t] = dividendPerTokenHistory[_token][_tokenId][_t - UPDATE_PERIOD];
 				_t += UPDATE_PERIOD;
 			}
 			lastUpdatePeriod[_token][_tokenId] = _timestamp;
@@ -112,16 +118,27 @@ contract DepositStorage {
 		return true;
 	}
 
+	event LOG(uint x);
+
 	function releaseDividendEth(address _token, uint _tokenId, uint _depositId) dividendTokenZero() existingDeposit(_token, _tokenId, _depositId) payable public returns (bool) {
 		require(msg.value == 0);
+
 		uint _timestamp = currentPeriod();
+
 		if (_timestamp > lastUpdatePeriod[_token][_tokenId])
 			updateState(_token, _tokenId);
+
 		uint _depositTimestamp = depositTimestamp[_token][_tokenId][msg.sender][_depositId];
-		uint _dividendPerToken = dividendPerTokenHistory[_token][_tokenId][_timestamp].sub(dividendPerTokenHistory[_token][_tokenId][_depositTimestamp]);
-		uint _value = _dividendPerToken.mul(depositValue[_token][_tokenId][msg.sender][_depositId]) / TOKEN_SIZE;
-		depositTimestamp[_token][_tokenId][msg.sender][_depositId] = _timestamp;
-		msg.sender.transfer(_value);
+
+		uint _dividendPerToken = dividendPerTokenHistory[_token][_tokenId][_timestamp] - dividendPerTokenHistory[_token][_tokenId][_depositTimestamp];
+
+		LOG(dividendPerTokenHistory[_token][_tokenId][_timestamp]);
+		LOG(dividendPerTokenHistory[_token][_tokenId][_depositTimestamp]);
+		LOG(_dividendPerToken);
+
+		// uint _value = _dividendPerToken.mul(depositValue[_token][_tokenId][msg.sender][_depositId]) / TOKEN_SIZE;
+		// depositTimestamp[_token][_tokenId][msg.sender][_depositId] = _timestamp;
+		// msg.sender.transfer(_value);
 		return true;
 	}
 
