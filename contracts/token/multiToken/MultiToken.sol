@@ -166,4 +166,36 @@ contract MultiToken is Ownable, MultiTokenBasics {
 	}
 
 
+	/**
+	 * @dev Increase the amount of tokens that an owner allowed to a spender.
+	 * @param _tokenId uint256 is subtoken identifier.
+	 * @param _spender The address which will spend the funds.
+     * @param _addedValue The amount of tokens to increase the allowance by.
+	 */
+
+	function increaseApproval(uint256 _tokenId, address _spender, uint _addedValue) public returns (bool) {
+		var _sender = msg.sender;
+    	allowed[_tokenId][_sender][_spender] = allowed[_tokenId][_sender][_spender].add(_addedValue);
+    	Approval(_tokenId, _sender, _spender, allowed[_tokenId][_sender][_spender]);
+    	return true;
+    }
+
+	/**
+   	 * @dev Decrease the amount of tokens that an owner allowed to a spender.
+	 * 
+     * @param _tokenId uint256 is subtoken identifier.
+     * @param _spender The address which will spend the funds.
+     * @param _subtractedValue The amount of tokens to decrease the allowance by.
+     */
+    function decreaseApproval(uint256 _tokenId, address _spender, uint _subtractedValue) public returns (bool) {
+		var _sender = msg.sender;
+    	uint oldValue = allowed[_tokenId][_sender][_spender];
+    	if (_subtractedValue > oldValue) {
+        	allowed[_tokenId][_sender][_spender] = 0;
+      	} else {
+    		allowed[_tokenId][_sender][_spender] = oldValue.sub(_subtractedValue);
+      	}
+      	Approval(_tokenId, _sender, _spender, allowed[_tokenId][_sender][_spender]);
+      	return true;
+    }
 }
