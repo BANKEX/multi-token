@@ -16,9 +16,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@digix/doxity": "^0.5.2",
     "dotenv": "^5.0.1",
     "ethereumjs-util": "^5.1.5",
     "ethereumjs-wallet": "^0.6.0",
-    "truffle-wallet-provider": "0.0.5"
+    "truffle-compile": "git+ssh://git@github.com/BANKEX/truffle-compile.git#develop",
+    "truffle-wallet-provider": "0.0.5",
+    "zeppelin-solidity": "^1.8.0"
   }
 }
