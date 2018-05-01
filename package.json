@@ -16,7 +16,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@digix/doxity": "^0.5.2",
     "dotenv": "^5.0.1",
     "ethereumjs-util": "^5.1.5",
     "ethereumjs-wallet": "^0.6.0",
