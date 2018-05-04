@@ -109,6 +109,7 @@ contract MultiDividendsToken is MultiDividendsTokenInterface, MultiToken {
     _dividendsPerToken = _dividendsPerToken.add(msg.value.mul(DECIMAL_MULTIPLIER)/_totalSupply);
     require(_dividendsPerToken.mul(_totalSupply) <= INT256_MAX);
     dividendsPerToken[_tokenId] = _dividendsPerToken;
+    emit AcceptDividends(_tokenId, msg.value);
   }
 
   function () public payable {
