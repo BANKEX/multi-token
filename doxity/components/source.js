@@ -27,7 +27,7 @@ export default class Source extends Component {
       <div className="source">
         {!this.state.renderHack &&
           <pre ref="highlight">
-            <code>{contract.source}</code>
+            <code>{contract.source.replace("\r", "")}</code>
           </pre>
         }
       </div>
