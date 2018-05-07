@@ -4,7 +4,6 @@
   "version": "1.0.0",
   "author": "Chris Hitchcott <hitchcott@gmail.com>",
   "dependencies": {
-    "config": "^1.30.0",
     "highlight.js": "^9.7.0",
     "highlightjs-solidity": "^1.0.5",
     "react-document-title": "^2.0.1",

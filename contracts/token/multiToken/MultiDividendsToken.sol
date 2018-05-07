@@ -16,8 +16,8 @@ contract MultiDividendsToken is MultiDividendsTokenInterface, MultiToken {
   uint constant DECIMAL_MULTIPLIER = 10 ** 18;
   uint constant INT256_MAX = 1 << 255 - 1;
 
-  mapping(uint => mapping (address => uint)) public dividendsRightsFix;
-  mapping(uint => uint) dividendsPerToken;
+  mapping(uint => mapping (address => uint)) internal dividendsRightsFix;
+  mapping(uint => uint) internal dividendsPerToken;
 
   /**
   * @dev Gets the dividends rights of the specified address.
@@ -25,7 +25,11 @@ contract MultiDividendsToken is MultiDividendsTokenInterface, MultiToken {
   * @param _owner The address to query the the balance of.
   * @return An uint representing the amount of dividends rights owned by the passed address.
   */
-  function dividendsRightsOf(uint _tokenId, address _owner) public view returns (uint balance) {
+  function dividendsRightsOf(uint _tokenId, address _owner) external view returns (uint balance) {
+    return dividendsRightsOf_(_tokenId, _owner);
+  }
+
+  function dividendsRightsOf_(uint _tokenId, address _owner) internal view returns (uint balance) {
     uint rights = dividendsPerToken[_tokenId] * balances[_tokenId][_owner] / DECIMAL_MULTIPLIER + dividendsRightsFix[_tokenId][_owner];
     return int(rights) < 0 ? 0 : rights;
   }
@@ -38,7 +42,7 @@ contract MultiDividendsToken is MultiDividendsTokenInterface, MultiToken {
   * @param _for The address to transfer for.
   */
   function releaseDividendsRights_(uint _tokenId, address _for, uint _value) internal returns(bool) {
-    uint _dividendsRights = dividendsRightsOf(_tokenId, _for);
+    uint _dividendsRights = dividendsRightsOf_(_tokenId, _for);
     require(_dividendsRights >= _value);
     dividendsRightsFix[_tokenId][_for] -= _value;
     msg.sender.transfer(_value);
@@ -52,7 +56,7 @@ contract MultiDividendsToken is MultiDividendsTokenInterface, MultiToken {
   * @param _tokenId subtoken identifier
   * @param _value The amount of dividends to be transferred.
   */
-  function releaseDividendsRights(uint _tokenId, uint _value) public returns(bool) {
+  function releaseDividendsRights(uint _tokenId, uint _value) external returns(bool) {
     return releaseDividendsRights_(_tokenId, msg.sender, _value);
   }
 
@@ -80,7 +84,7 @@ contract MultiDividendsToken is MultiDividendsTokenInterface, MultiToken {
   * @param _to The address to transfer to.
   * @param _value The amount to be transferred.
   */
-  function transfer(uint _tokenId, address _to, uint _value) public returns (bool) {
+  function transfer(uint _tokenId, address _to, uint _value) external returns (bool) {
     dividendsRightsFixUpdate_(_tokenId, msg.sender, _to, _value);
     return transfer_(_tokenId, msg.sender, _to, _value);
   }
@@ -93,7 +97,7 @@ contract MultiDividendsToken is MultiDividendsTokenInterface, MultiToken {
   * @param _to address The address which you want to transfer to
   * @param _value uint the amount of tokens to be transferred
   */
-  function transferFrom(uint _tokenId, address _from, address _to, uint _value) public returns (bool) {
+  function transferFrom(uint _tokenId, address _from, address _to, uint _value) external returns (bool) {
     dividendsRightsFixUpdate_(_tokenId, _from, _to, _value);
     return transferAllowed_(_tokenId, _from, _to, _value);
   }

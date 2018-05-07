@@ -1,3 +1,9 @@
+# Documentation
+
+https://bankex.github.io/multi-token/
+
+# Deployment
+
 Use `truffle migrate --network ganache` to  deploy contract on ganache.
 
 Use 

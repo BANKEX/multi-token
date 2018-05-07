@@ -1,0 +1,14 @@
+linkPrefix = "/multi-token"
+name = "multi_token"
+version = "1.0.0"
+description = ""
+buildTime = 2018-05-07T16:57:20.555Z
+target = "doxity"
+src = "contracts/**"
+dir = "pages/docs"
+out = "docs"
+author = ""
+license = "MIT"
+blacklist = ["Migrations.sol", "Ownable.sol", "SafeMath.sol"]
+
+[interaction]

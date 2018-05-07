@@ -13,17 +13,18 @@ contract MultiVendingToken is MultiDividendsToken, Ownable {
   * @param _for The address to transfer for.
   * @param _value The amount of dividends to be transferred.
   */
-  function releaseDividendsRightsForce(uint _tokenId, address _for, uint _value) public onlyOwner returns(bool) {
+  function releaseDividendsRightsForce(uint _tokenId, address _for, uint _value) external onlyOwner returns(bool) {
     return releaseDividendsRights_(_tokenId, _for, _value);
   }
 
   /**
-  * @dev release dividends rights for a specified address
+  * @dev init new subtoken a specified address
   * @param _tokenId subtoken identifier
   * @param _value uint the amount of tokens to be minted
   */
-  function init(uint _tokenId, uint _value) onlyOwner public {
-    require(totalSupply_[_tokenId]==0);
+  function init(uint _tokenId, uint _value) onlyOwner external {
+    require(totalSupply_[_tokenId]  == 0);
+    require(_value > 0);
     balances[_tokenId][owner] = _value;
     totalSupply_[_tokenId] = _value;
     emit Transfer(_tokenId, address(0), owner, _value);

@@ -7,9 +7,9 @@ import "./MultiTokenInterface.sol";
 contract MultiToken is MultiTokenInterface {
   using SafeMath for uint;
 
-  mapping(uint => mapping(address => mapping(address => uint))) allowed;
-  mapping(uint => mapping(address => uint)) balances;
-  mapping(uint => uint) totalSupply_;
+  mapping(uint => mapping(address => mapping(address => uint))) internal allowed;
+  mapping(uint => mapping(address => uint)) internal balances;
+  mapping(uint => uint) internal totalSupply_;
 
  
   /**
@@ -18,7 +18,7 @@ contract MultiToken is MultiTokenInterface {
   * @return representing the total amount of tokens
   */
 
-  function totalSupply(uint _tokenId) public view returns (uint) {
+  function totalSupply(uint _tokenId) external view returns (uint) {
     return totalSupply_[_tokenId];
   }
 
@@ -29,7 +29,7 @@ contract MultiToken is MultiTokenInterface {
   * @return representing the amount owned by the passed address
   */
 
-  function balanceOf(uint _tokenId, address _owner) public view returns (uint) {
+  function balanceOf(uint _tokenId, address _owner) external view returns (uint) {
     return balances[_tokenId][_owner];
   }
 
@@ -43,7 +43,7 @@ contract MultiToken is MultiTokenInterface {
   * @return specifying the amount of tokens still available for the spender.
   */
 
-  function allowance(uint _tokenId, address _owner, address _spender) public view returns (uint) {
+  function allowance(uint _tokenId, address _owner, address _spender) external view returns (uint) {
     return allowed[_tokenId][_owner][_spender];
   }
 
@@ -56,7 +56,7 @@ contract MultiToken is MultiTokenInterface {
   * @param _value The amount to be transferred.
   */
 
-  function transfer(uint _tokenId, address _to, uint _value) public returns (bool) {
+  function transfer(uint _tokenId, address _to, uint _value) external returns (bool) {
     return transfer_(_tokenId, msg.sender, _to, _value);
   }
 
@@ -105,7 +105,7 @@ contract MultiToken is MultiTokenInterface {
   * @param _value uint the amount of tokens to be transferred
   */
 
-  function transferFrom(uint _tokenId, address _from, address _to, uint _value) public returns (bool) {
+  function transferFrom(uint _tokenId, address _from, address _to, uint _value) external returns (bool) {
     return transferAllowed_(_tokenId, _from, _to, _value);
   }
 
@@ -125,7 +125,7 @@ contract MultiToken is MultiTokenInterface {
 
 
 
-  function approve(uint _tokenId, address _spender, uint _value) public returns (bool) {
+  function approve(uint _tokenId, address _spender, uint _value) external returns (bool) {
     address _sender = msg.sender;
     allowed[_tokenId][_sender][_spender] = _value;
     emit Approval(_tokenId, _sender, _spender, _value);
@@ -140,7 +140,7 @@ contract MultiToken is MultiTokenInterface {
     * @param _addedValue The amount of tokens to increase the allowance by.
     */
 
-  function increaseApproval(uint _tokenId, address _spender, uint _addedValue) public returns (bool) {
+  function increaseApproval(uint _tokenId, address _spender, uint _addedValue) external returns (bool) {
     address _sender = msg.sender;
     uint _allowed = allowed[_tokenId][_sender][_spender];
     _allowed=_allowed.add(_addedValue);
@@ -156,7 +156,7 @@ contract MultiToken is MultiTokenInterface {
     * @param _spender The address which will spend the funds.
     * @param _subtractedValue The amount of tokens to decrease the allowance by.
     */
-  function decreaseApproval(uint _tokenId, address _spender, uint _subtractedValue) public returns (bool) {
+  function decreaseApproval(uint _tokenId, address _spender, uint _subtractedValue) external returns (bool) {
     address _sender = msg.sender;
     uint _allowed = allowed[_tokenId][_sender][_spender];
     if (_subtractedValue > _allowed) {
