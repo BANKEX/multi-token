@@ -1,8 +1,12 @@
 {
   "target": "doxity",
-  "source": "https://github.com/DigixGlobal/doxity-gatsby-starter-project/archive/74df3b2b7a2484714540e4a9153a8f1d0f95a380.tar.gz",
   "src": "contracts/**",
   "dir": "pages/docs",
+  "source": "https://github.com/DigixGlobal/doxity-gatsby-starter-project/archive/74df3b2b7a2484714540e4a9153a8f1d0f95a380.tar.gz",
   "out": "docs",
-  "blacklist": ["Migrations.sol", "Ownable.sol", "SafeMath.sol"]
+  "blacklist": [
+    "Migrations.sol",
+    "Ownable.sol",
+    "SafeMath.sol"
+  ]
 }

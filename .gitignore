@@ -7,3 +7,4 @@ build/
 *.sh
 /*.deprecated
 docs/bundle.js.map
+doxity/

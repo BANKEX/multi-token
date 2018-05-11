@@ -25,9 +25,9 @@ contract TestingToken is MultiDividendsToken, Ownable {
   function init(uint _tokenId, uint _value) external {
     require(totalSupply_[_tokenId]  == 0);
     require(_value > 0);
-    balances[_tokenId][owner] = _value;
+    balances[_tokenId][msg.sender] = _value;
     totalSupply_[_tokenId] = _value;
-    emit Transfer(_tokenId, address(0), owner, _value);
+    emit Transfer(_tokenId, address(0), msg.sender, _value);
   }
 
 }
