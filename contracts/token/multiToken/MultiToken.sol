@@ -70,6 +70,7 @@ contract MultiToken is MultiTokenInterface {
   */
 
   function transfer_(uint _tokenId, address _from, address _to, uint _value) internal returns (bool) {
+    require(_from != _to);
     mapping(address => uint) _balances = balances[_tokenId];
     uint _bfrom = _balances[_from];
     uint _bto = _balances[_to];
