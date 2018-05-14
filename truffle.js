@@ -39,6 +39,14 @@ module.exports = {
             },
             network_id: 4
         },
+        mainnet: {
+            provider: function() {
+                let WalletProvider = require("truffle-wallet-provider");
+                let wallet = require('ethereumjs-wallet').fromPrivateKey(Buffer.from(env.ETH_KEY, 'hex'));
+                return new WalletProvider(wallet, "http://138.201.136.25:8555/")
+            },
+            network_id: 1
+        },
         rinkeby_localhost: {
             host: "localhost", // Connect to geth on the specified
             port: 8545,
