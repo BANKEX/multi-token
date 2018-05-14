@@ -8,3 +8,4 @@ build/
 /*.deprecated
 docs/bundle.js.map
 doxity/
+.env
