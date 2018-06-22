@@ -23,7 +23,7 @@ contract MultiVendingToken is MultiDividendsToken, Ownable {
   * @param _value uint the amount of tokens to be minted
   */
   function init(uint _tokenId, uint _value) onlyOwner external {
-    require(totalSupply_[_tokenId]  == 0);
+    require(totalSupply_[_tokenId] == 0);
     require(_value > 0);
     balances[_tokenId][owner] = _value;
     totalSupply_[_tokenId] = _value;

@@ -10,6 +10,7 @@ contract('MultiToken', (accounts) => {
     });
 
     describe("common", () => {
+
         it("ADMIN == owner", async () => {
             assert.equal(ADMIN, await mt.owner(), "error owner != ADMIN");
         });

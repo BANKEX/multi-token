@@ -71,8 +71,10 @@ contract MultiDividendsToken is MultiDividendsTokenInterface, MultiToken {
     uint _dividendsPerToken = dividendsPerToken[_tokenId];
     uint _balanceFrom = balances[_tokenId][_from];
     uint _balanceTo = balances[_tokenId][_to];
-    dividendsRightsFix[_tokenId][_from] += _dividendsPerToken * _balanceFrom / DECIMAL_MULTIPLIER - _dividendsPerToken * (_balanceFrom - _value) / DECIMAL_MULTIPLIER;
-    dividendsRightsFix[_tokenId][_to] += _dividendsPerToken * _balanceTo / DECIMAL_MULTIPLIER - _dividendsPerToken * (_balanceTo + _value) / DECIMAL_MULTIPLIER; 
+    dividendsRightsFix[_tokenId][_from] += _dividendsPerToken * _balanceFrom / DECIMAL_MULTIPLIER -
+    _dividendsPerToken * (_balanceFrom - _value) / DECIMAL_MULTIPLIER;
+    dividendsRightsFix[_tokenId][_to] += _dividendsPerToken * _balanceTo / DECIMAL_MULTIPLIER -
+    _dividendsPerToken * (_balanceTo + _value) / DECIMAL_MULTIPLIER;
   }
 
 

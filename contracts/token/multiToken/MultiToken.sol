@@ -144,7 +144,7 @@ contract MultiToken is MultiTokenInterface {
   function increaseApproval(uint _tokenId, address _spender, uint _addedValue) external returns (bool) {
     address _sender = msg.sender;
     uint _allowed = allowed[_tokenId][_sender][_spender];
-    _allowed=_allowed.add(_addedValue);
+    _allowed = _allowed.add(_addedValue);
     allowed[_tokenId][_sender][_spender] = _allowed;
     emit Approval(_tokenId, _sender, _spender, _allowed);
     return true;
