@@ -44,7 +44,7 @@ contract MultiDividendsToken is MultiDividendsTokenInterface, MultiToken {
     uint _dividendsRights = dividendsRightsOf_(_tokenId, _for);
     require(_dividendsRights >= _value);
     dividendsRightsFix[_tokenId][_for] -= _value;
-    msg.sender.transfer(_value);
+    _for.transfer(_value);
     emit ReleaseDividendsRights(_tokenId, _for, _value);
     return true;
   }
