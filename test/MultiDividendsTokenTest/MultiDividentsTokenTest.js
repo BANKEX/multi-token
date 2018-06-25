@@ -17,9 +17,9 @@ contract('MultiTokenDividents', (accounts) => {
         mt = await MultiTokenDividents.new({from: ADMIN});
     });
 
-    describe("common check", () => {
+    describe("", () => {
 
-        it("ADMIN == owner", async () => {
+        it("", async () => {
             // assert.equal(ADMIN, await mt.owner(), "error owner != ADMIN");
         });
 

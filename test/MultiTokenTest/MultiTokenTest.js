@@ -17,9 +17,9 @@ contract('MultiToken', (accounts) => {
         mt = await MultiToken.new({from: ADMIN});
     });
 
-    describe("common check", () => {
+    describe("", () => {
 
-        it("ADMIN == owner", async () => {
+        it("", async () => {
 
         });
 
