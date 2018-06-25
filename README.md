@@ -1,12 +1,16 @@
 # Simple Summary
 ---
-Interface for a group of ERC20 tokens
+ERC888 token implementation. 
+
 # Abstract
 ---
-The following standard allows to mint more than one ERC20 token on single smart contract, as well as transfer and approve this tokens (full support of ERC20).
+The following standard allows to store the set of unique (like  ERC721), but splittable (like ERC20) token.
+
 # Motivation
 ---
-This interface make easy to work with a group of tokens. Moreover, writing Dapps become easier.
+This standard allow us to make tokenizing assets cheaper (we do not need to publish separate contract for each asset). Also 
+ERC888 tokens allow us to create DApps easier, because all tokens corresponding the DApp are stored in one contract.
+
 # Specification
 ---
 ## Token
@@ -52,10 +56,7 @@ MUST trigger on any successful call to `approve`(uint256 _tokenId, address _spen
 ``` java
   event Approval(uint256 indexed tokenId, address indexed owner, address indexed spender, uint256 value)
 ```
-### Implementation
----
-BANKEX Multi token:
-https://bankex.github.io/multi-token/
+
 ### Deployment
 ---
 Use `truffle migrate --network ganache` to  deploy contract on ganache.
@@ -67,3 +68,11 @@ geth --dev --rpccorsdomain="*" --rpcaddr="0.0.0.0" --rpc --rpcapi="personal,eth,
 to setup remix compatible debug supporting test ethereum blockchain and `truffle migrate --network geth_dev` to deploy the contract.
 Strictly recommended to use solium linter. `solium -d contracts`
 If you have compilation errors due to `emit Event` in solidity, update truffle.
+
+
+## For developers
+
+|||
+|---|---|
+| utility token natspec documentation | [link](https://bankex.github.io/multi-token/docs/MultiToken/)  |
+| security token natspec documentation  | [link](https://bankex.github.io/multi-token/docs/MultiDividendsToken/) |
