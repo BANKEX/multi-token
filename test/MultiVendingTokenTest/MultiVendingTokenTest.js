@@ -17,11 +17,295 @@ contract('MultiVendingToken', (accounts) => {
         mt = await MultiToken.new({from: ADMIN});
     });
 
-    describe("common check", () => {
+    describe("role check", () => {
 
         it("ADMIN == owner", async () => {
             assert.equal(ADMIN, await mt.owner(), "error owner != ADMIN");
         });
 
+    });
+
+    describe("common check", () => {
+
+        it("allow to init token", async () => {
+            await mt.init(tbn(0x12), tw(100), {from: ADMIN});
+            assert((await mt.balanceOf(tbn(0x12), ADMIN)).eq(tw(100)));
+            assert((await mt.totalSupply(tbn(0x12))).eq(tw(100)));
+        });
+
+        it("allow to transfer token to other account", async () => {
+            await mt.init(tbn(0x12), tw(100), {from: ADMIN});
+            assert((await mt.balanceOf(tbn(0x12), ADMIN)).eq(tw(100)));
+            assert((await mt.totalSupply(tbn(0x12))).eq(tw(100)));
+            await mt.transfer(tbn(0x12), accounts[8], tw(12), {from: ADMIN});
+            assert((await mt.balanceOf(tbn(0x12), accounts[8])).eq(tw(12)));
+            assert((await mt.balanceOf(tbn(0x12), ADMIN)).eq(tw(88)));
+        });
+
+        it("allow to apporove token to other account", async () => {
+            await mt.init(tbn(0x12), tw(100), {from: ADMIN});
+            assert((await mt.balanceOf(tbn(0x12), ADMIN)).eq(tw(100)));
+            assert((await mt.totalSupply(tbn(0x12))).eq(tw(100)));
+            await mt.approve(tbn(0x12), accounts[8], tw(19), {from: ADMIN});
+            assert((await mt.allowance(tbn(0x12), ADMIN, accounts[8])).eq(tw(19)));
+        });
+
+        it("allow to decrease approval of other account", async () => {
+            await mt.init(tbn(0x12), tw(100), {from: ADMIN});
+            assert((await mt.balanceOf(tbn(0x12), ADMIN)).eq(tw(100)));
+            assert((await mt.totalSupply(tbn(0x12))).eq(tw(100)));
+            await mt.approve(tbn(0x12), accounts[8], tw(19), {from: ADMIN});
+            assert((await mt.allowance(tbn(0x12), ADMIN, accounts[8])).eq(tw(19)));
+            await mt.decreaseApproval(tbn(0x12), accounts[8], tw(1), {from: ADMIN});
+            assert((await mt.allowance(tbn(0x12), ADMIN, accounts[8])).eq(tw(18)));
+        });
+
+        it("allow to increase approval of other account", async () => {
+            await mt.init(tbn(0x12), tw(100), {from: ADMIN});
+            assert((await mt.balanceOf(tbn(0x12), ADMIN)).eq(tw(100)));
+            assert((await mt.totalSupply(tbn(0x12))).eq(tw(100)));
+            await mt.approve(tbn(0x12), accounts[8], tw(19), {from: ADMIN});
+            assert((await mt.allowance(tbn(0x12), ADMIN, accounts[8])).eq(tw(19)));
+            await mt.increaseApproval(tbn(0x12), accounts[8], tw(1), {from: ADMIN});
+            assert((await mt.allowance(tbn(0x12), ADMIN, accounts[8])).eq(tw(20)));
+        });
+
+        it("allow to transferFrom of other account", async () => {
+            await mt.init(tbn(0x12), tw(100), {from: ADMIN});
+            assert((await mt.balanceOf(tbn(0x12), ADMIN)).eq(tw(100)));
+            assert((await mt.totalSupply(tbn(0x12))).eq(tw(100)));
+            await mt.approve(tbn(0x12), accounts[8], tw(19), {from: ADMIN});
+            await mt.transferFrom(tbn(0x12), ADMIN, accounts[7], tw(19), {from: accounts[8]});
+            assert((await mt.allowance(tbn(0x12), ADMIN, accounts[8])).eq(tw(0)));
+            assert((await mt.balanceOf(tbn(0x12), accounts[7])).eq(tw(19)));
+        });
+
+        it("allow to decrease approval of other account and transferFrom later", async () => {
+            await mt.init(tbn(0x12), tw(100), {from: ADMIN});
+            assert((await mt.balanceOf(tbn(0x12), ADMIN)).eq(tw(100)));
+            assert((await mt.totalSupply(tbn(0x12))).eq(tw(100)));
+            await mt.approve(tbn(0x12), accounts[8], tw(19), {from: ADMIN});
+            assert((await mt.allowance(tbn(0x12), ADMIN, accounts[8])).eq(tw(19)));
+            await mt.decreaseApproval(tbn(0x12), accounts[8], tw(1), {from: ADMIN});
+            assert((await mt.allowance(tbn(0x12), ADMIN, accounts[8])).eq(tw(18)));
+            await mt.transferFrom(tbn(0x12), ADMIN, accounts[7], tw(18), {from: accounts[8]});
+            assert((await mt.allowance(tbn(0x12), ADMIN, accounts[8])).eq(tw(0)));
+            assert((await mt.balanceOf(tbn(0x12), accounts[7])).eq(tw(18)));
+        });
+
+        it("allow to increase approval of other account and transferFrom later", async () => {
+            await mt.init(tbn(0x12), tw(100), {from: ADMIN});
+            assert((await mt.balanceOf(tbn(0x12), ADMIN)).eq(tw(100)));
+            assert((await mt.totalSupply(tbn(0x12))).eq(tw(100)));
+            await mt.approve(tbn(0x12), accounts[8], tw(19), {from: ADMIN});
+            assert((await mt.allowance(tbn(0x12), ADMIN, accounts[8])).eq(tw(19)));
+            await mt.increaseApproval(tbn(0x12), accounts[8], tw(1), {from: ADMIN});
+            assert((await mt.allowance(tbn(0x12), ADMIN, accounts[8])).eq(tw(20)));
+            await mt.transferFrom(tbn(0x12), ADMIN, accounts[7], tw(20), {from: accounts[8]});
+            assert((await mt.allowance(tbn(0x12), ADMIN, accounts[8])).eq(tw(0)));
+            assert((await mt.balanceOf(tbn(0x12), accounts[7])).eq(tw(20)));
+        });
+    });
+
+    describe("negative check", () => {
+
+        it("should not allow to init tokens with existing ID", async () => {
+            await mt.init(tbn(0x12), tw(100), {from: ADMIN});
+            assert((await mt.balanceOf(tbn(0x12), ADMIN)).eq(tw(100)));
+            assert((await mt.totalSupply(tbn(0x12))).eq(tw(100)));
+            try {
+                await mt.init(tbn(0x12), tw(100), {from: accounts[9]});
+            }
+            catch (e) {
+
+            }
+            assert((await mt.balanceOf(tbn(0x12), ADMIN)).eq(tw(100)));
+            assert((await mt.totalSupply(tbn(0x12))).eq(tw(100)));
+            assert((await mt.balanceOf(tbn(0x12), accounts[9])).eq(tw(0)));
+        });
+
+        it("should not allow to transfer tokens as ADMIN if not ADMIN", async () => {
+            await mt.init(tbn(0x12), tw(100), {from: ADMIN});
+            assert((await mt.balanceOf(tbn(0x12), ADMIN)).eq(tw(100)));
+            assert((await mt.totalSupply(tbn(0x12))).eq(tw(100)));
+            try {
+                await mt.transfer(tbn(0x12), accounts[8], tw(12), {from: accounts[5]});
+            }
+            catch (e) {
+
+            }
+            assert((await mt.balanceOf(tbn(0x12), accounts[8])).eq(tw(0)));
+            assert((await mt.balanceOf(tbn(0x12), ADMIN)).eq(tw(100)));
+        });
+
+        it("should not allow to approve / decreaseApproval / increaseApproval if not ADMIN", async () => {
+            await mt.init(tbn(0x12), tw(100), {from: ADMIN});
+            assert((await mt.balanceOf(tbn(0x12), ADMIN)).eq(tw(100)));
+            assert((await mt.totalSupply(tbn(0x12))).eq(tw(100)));
+            try {
+                await mt.approve(tbn(0x12), accounts[8], tw(19), {from: accounts[4]});
+            }
+            catch (e) {
+
+            }
+            assert((await mt.allowance(tbn(0x12), ADMIN, accounts[8])).eq(tw(0)));
+
+            try {
+                await mt.increaseApproval(tbn(0x12), accounts[8], tw(1), {from: accounts[4]});
+            }
+            catch (e) {
+
+            }
+            assert((await mt.allowance(tbn(0x12), ADMIN, accounts[8])).eq(tw(0)));
+
+            try {
+                await mt.decreaseApproval(tbn(0x12), accounts[8], tw(1), {from: accounts[4]});
+            }
+            catch (e) {
+
+            }
+            assert((await mt.allowance(tbn(0x12), ADMIN, accounts[8])).eq(tw(0)));
+
+        });
+
+        it("should not allow to tranferFrom if not spender", async () => {
+            await mt.init(tbn(0x12), tw(100), {from: ADMIN});
+            assert((await mt.balanceOf(tbn(0x12), ADMIN)).eq(tw(100)));
+            assert((await mt.totalSupply(tbn(0x12))).eq(tw(100)));
+            await mt.approve(tbn(0x12), accounts[8], tw(19), {from: ADMIN});
+
+            try {
+                await mt.transferFrom(tbn(0x12), accounts[3], accounts[7], tw(18), {from: accounts[8]});
+            }
+            catch (e) {
+
+            }
+
+            try {
+                await mt.transferFrom(tbn(0x12), ADMIN, accounts[7], tw(18), {from: accounts[4]});
+            }
+            catch (e) {
+
+            }
+            assert((await mt.allowance(tbn(0x12), ADMIN, accounts[8])).eq(tw(19)));
+            assert((await mt.balanceOf(tbn(0x12), accounts[7])).eq(tw(0)));
+        });
+    });
+
+    describe("dividends check", () => {
+
+        it("should allow to accept dividends", async () => {
+            await mt.init(tbn(0x12), tw(100), {from: ADMIN});
+            assert((await mt.balanceOf(tbn(0x12), ADMIN)).eq(tw(100)));
+            assert((await mt.totalSupply(tbn(0x12))).eq(tw(100)));
+            for (let i = 1; i < 8; i++) {
+                await mt.acceptDividends(tbn(0x12), {from: accounts[i], value: tw(2)});
+            }
+
+            let dividends = await mt.dividendsRightsOf(tbn(0x12), ADMIN);
+            assert(dividends.eq(tw(14)));
+            assert((await web3.eth.getBalance(mt.address)).eq(tw(14)));
+        });
+
+        it("should allow to release dividends after investing", async () => {
+            await mt.init(tbn(0x12), tw(100), {from: ADMIN});
+            assert((await mt.balanceOf(tbn(0x12), ADMIN)).eq(tw(100)));
+            assert((await mt.totalSupply(tbn(0x12))).eq(tw(100)));
+            for (let i = 1; i < 8; i++) {
+                await mt.acceptDividends(tbn(0x12), {from: accounts[i], value: tw(2)});
+            }
+            let dividends = await mt.dividendsRightsOf(tbn(0x12), ADMIN);
+            assert(dividends.eq(tw(14)));
+            assert((await web3.eth.getBalance(mt.address)).eq(tw(14)));
+            await mt.transfer(tbn(0x12), accounts[3], tw(50));
+            await mt.acceptDividends(tbn(0x12), {from: accounts[9], value: tw(10)});
+            assert((await mt.dividendsRightsOf(tbn(0x12), accounts[3])).eq(tw(5)));
+            assert((await mt.dividendsRightsOf(tbn(0x12), ADMIN)).eq(tw(19)));
+            assert((await web3.eth.getBalance(mt.address)).eq(tw(24)))
+        });
+
+        it("should allow to approve," +
+            "than invest, than increase approval, than invest and release all", async () => {
+            let balanceBefore = await web3.eth.getBalance(accounts[5]);
+            await mt.init(tbn(0x12), tw(100), {from: ADMIN});
+            assert((await mt.balanceOf(tbn(0x12), ADMIN)).eq(tw(100)));
+            assert((await mt.totalSupply(tbn(0x12))).eq(tw(100)));
+            await mt.approve(tbn(0x12), accounts[4], tw(50), {from: ADMIN});
+            await mt.transferFrom(tbn(0x12), ADMIN, accounts[5], tw(50), {from: accounts[4]});
+            for (let i = 1; i < 5; i++) {
+                await mt.acceptDividends(tbn(0x12), {from: accounts[i], value: tw(2)});
+            }
+            for (let i = 6; i < 8; i++) {
+                await mt.acceptDividends(tbn(0x12), {from: accounts[i], value: tw(2)});
+            }
+            let dividendsFirst = await mt.dividendsRightsOf(tbn(0x12), accounts[5]);
+            assert(dividendsFirst.eq(tw(6)));
+            await mt.increaseApproval(tbn(0x12), accounts[4], tw(25), {from: ADMIN});
+            await mt.transferFrom(tbn(0x12), ADMIN, accounts[5], tw(25), {from: accounts[4]});
+            await mt.acceptDividends(tbn(0x12), {from: accounts[9], value: tw(20)});
+            let dividendsSecond = await mt.dividendsRightsOf(tbn(0x12), accounts[5]);
+            assert(dividendsSecond.eq(tw(21)));
+            let instance = await mt.releaseDividendsRights(tbn(0x12), tw(21), {from: accounts[5], gasPrice: gasPrice});
+            let fee = instance.receipt.gasUsed * gasPrice;
+            let balanceNow = await web3.eth.getBalance(accounts[5]);
+            assert((balanceBefore.plus(tw(21))).eq(balanceNow.plus(fee)));
+        });
+
+        it("should allow to release by force", async () => {
+            let balanceBefore = await web3.eth.getBalance(accounts[5]);
+            await mt.init(tbn(0x12), tw(100), {from: ADMIN});
+            assert((await mt.balanceOf(tbn(0x12), ADMIN)).eq(tw(100)));
+            assert((await mt.totalSupply(tbn(0x12))).eq(tw(100)));
+            await mt.transfer(tbn(0x12), accounts[5], tw(50));
+            await mt.acceptDividends(tbn(0x12), {from: accounts[3], value: tw(4)});
+            let dividends = await mt.dividendsRightsOf(tbn(0x12), accounts[5]);
+            assert(dividends.eq(tw(2)));
+            await mt.releaseDividendsRightsForce(tbn(0x12), accounts[5], dividends, {from : ADMIN});
+            let balanceNow = await web3.eth.getBalance(accounts[5]);
+            assert((balanceBefore.plus(dividends)).eq(balanceNow));
+        });
+
+        it("just all in one", async() => {
+
+            let tokens = {
+                token0: tbn(0x0),
+                token1: tbn(0x1),
+                token2: tbn(0x2),
+                token3: tbn(0x3),
+                token4: tbn(0x4)
+            };
+
+            let incorrectSums = {
+                sum0: tw(0),
+                sum1: tbn(2**256),
+                sum2: tbn(-1),
+                sum3: tw(10000000),
+                sum4: tw(-2*256)
+            };
+
+            let sumsToCheck = {
+                sumd0: tw(1),
+                sumd1: tw(2)
+            };
+
+            let fees = [];
+            let balanceBefore = await web3.eth.getBalance(accounts[2]);
+            for (let i in tokens) {
+                await mt.init(tokens[i], tw(100), {from: ADMIN});
+                await mt.transfer(tokens[i], accounts[2], tw(50), {from: ADMIN});
+                await mt.acceptDividends(tokens[i], {from: accounts[6], value: tw(2)});
+                let d = await mt.dividendsRightsOf(tokens[i], accounts[2]);
+                let ins = await mt.releaseDividendsRights(tokens[i], d, {from: accounts[2], gasPrice: gasPrice});
+                fees.push(ins.receipt.gasUsed * gasPrice);
+            };
+            let balanceNow = await web3.eth.getBalance(accounts[2]);
+            let fee = 0;
+            for (let j = 0; j < 5; j++) {
+                fee += fees[j];
+            };
+            for (let j = 0; j < 5; j++) {
+                assert((balanceBefore.plus(tw(5)).eq(balanceNow.plus(fee))));
+            };
+        });
     });
 });
