@@ -6,8 +6,6 @@ if (env.NODE_ENV !== 'production') {
     require('dotenv').load();
 }
 
-
-
 module.exports = {
     // See <http://truffleframework.com/docs/advanced/configuration>
     // to customize your Truffle configuration!

@@ -1,7 +1,6 @@
 pragma solidity ^0.4.23;
 
 
-
 import "../../math/SafeMath.sol";
 import "./MultiToken.sol";
 import "./MultiDividendsTokenInterface.sol";
@@ -12,13 +11,13 @@ import "./MultiDividendsTokenInterface.sol";
  */
 contract MultiDividendsToken is MultiDividendsTokenInterface, MultiToken {
   using SafeMath for uint;
-
+  
   uint constant DECIMAL_MULTIPLIER = 10 ** 18;
   uint constant INT256_MAX = 1 << 255 - 1;
-
-  mapping(uint => mapping (address => uint)) internal dividendsRightsFix;
+  
+  mapping(uint => mapping(address => uint)) internal dividendsRightsFix;
   mapping(uint => uint) internal dividendsPerToken;
-
+  
   /**
   * @dev Gets the dividends rights of the specified address.
   * @param _tokenId subtoken identifier
@@ -28,20 +27,20 @@ contract MultiDividendsToken is MultiDividendsTokenInterface, MultiToken {
   function dividendsRightsOf(uint _tokenId, address _owner) external view returns (uint balance) {
     return dividendsRightsOf_(_tokenId, _owner);
   }
-
+  
   function dividendsRightsOf_(uint _tokenId, address _owner) internal view returns (uint balance) {
     uint rights = dividendsPerToken[_tokenId] * balances[_tokenId][_owner] / DECIMAL_MULTIPLIER + dividendsRightsFix[_tokenId][_owner];
     return int(rights) < 0 ? 0 : rights;
   }
-
-
+  
+  
   /**
   * @dev release dividends rights
   * @param _tokenId subtoken identifier
   * @param _value The amount of dividends to be transferred.
   * @param _for The address to transfer for.
   */
-  function releaseDividendsRights_(uint _tokenId, address _for, uint _value) internal returns(bool) {
+  function releaseDividendsRights_(uint _tokenId, address _for, uint _value) internal returns (bool) {
     uint _dividendsRights = dividendsRightsOf_(_tokenId, _for);
     require(_dividendsRights >= _value);
     dividendsRightsFix[_tokenId][_for] -= _value;
@@ -49,17 +48,17 @@ contract MultiDividendsToken is MultiDividendsTokenInterface, MultiToken {
     emit ReleaseDividendsRights(_tokenId, _for, _value);
     return true;
   }
-
-
+  
+  
   /**
   * @dev release dividends rights
   * @param _tokenId subtoken identifier
   * @param _value The amount of dividends to be transferred.
   */
-  function releaseDividendsRights(uint _tokenId, uint _value) external returns(bool) {
+  function releaseDividendsRights(uint _tokenId, uint _value) external returns (bool) {
     return releaseDividendsRights_(_tokenId, msg.sender, _value);
   }
-
+  
   /**
   * @dev Update dividends rights fix
   * @param _tokenId subtoken identifier
@@ -76,10 +75,7 @@ contract MultiDividendsToken is MultiDividendsTokenInterface, MultiToken {
     dividendsRightsFix[_tokenId][_to] += _dividendsPerToken * _balanceTo / DECIMAL_MULTIPLIER -
     _dividendsPerToken * (_balanceTo + _value) / DECIMAL_MULTIPLIER;
   }
-
-
   
-
   /**
   * @dev transfer token for a specified address
   * @param _tokenId subtoken identifier
@@ -90,8 +86,7 @@ contract MultiDividendsToken is MultiDividendsTokenInterface, MultiToken {
     dividendsRightsFixUpdate_(_tokenId, msg.sender, _to, _value);
     return transfer_(_tokenId, msg.sender, _to, _value);
   }
-
-
+  
   /**
   * @dev Transfer tokens from one address to another
   * @param _tokenId subtoken identifier
@@ -103,8 +98,7 @@ contract MultiDividendsToken is MultiDividendsTokenInterface, MultiToken {
     dividendsRightsFixUpdate_(_tokenId, _from, _to, _value);
     return transferAllowed_(_tokenId, _from, _to, _value);
   }
-
-
+  
   /**
   * @dev Accept dividends
   */
@@ -112,13 +106,13 @@ contract MultiDividendsToken is MultiDividendsTokenInterface, MultiToken {
     uint _dividendsPerToken = dividendsPerToken[_tokenId];
     uint _totalSupply = totalSupply_[_tokenId];
     require(_totalSupply > 0);
-    _dividendsPerToken = _dividendsPerToken.add(msg.value.mul(DECIMAL_MULTIPLIER)/_totalSupply);
+    _dividendsPerToken = _dividendsPerToken.add(msg.value.mul(DECIMAL_MULTIPLIER) / _totalSupply);
     require(_dividendsPerToken.mul(_totalSupply) <= INT256_MAX);
     dividendsPerToken[_tokenId] = _dividendsPerToken;
     emit AcceptDividends(_tokenId, msg.value);
   }
-
-  function () public payable {
+  
+  function() public payable {
     revert();
   }
 }
