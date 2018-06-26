@@ -260,12 +260,12 @@ contract('MultiVendingToken', (accounts) => {
             await mt.acceptDividends(tbn(0x12), {from: accounts[3], value: tw(4)});
             let dividends = await mt.dividendsRightsOf(tbn(0x12), accounts[5]);
             assert(dividends.eq(tw(2)));
-            await mt.releaseDividendsRightsForce(tbn(0x12), accounts[5], dividends, {from : ADMIN});
+            await mt.releaseDividendsRightsForce(tbn(0x12), accounts[5], dividends, {from: ADMIN});
             let balanceNow = await web3.eth.getBalance(accounts[5]);
             assert((balanceBefore.plus(dividends)).eq(balanceNow));
         });
 
-        it("just all in one", async() => {
+        it("just all in one", async () => {
 
             let tokens = {
                 token0: tbn(0x0),
@@ -277,10 +277,10 @@ contract('MultiVendingToken', (accounts) => {
 
             let incorrectSums = {
                 sum0: tw(0),
-                sum1: tbn(2**256),
+                sum1: tbn(2 ** 256),
                 sum2: tbn(-1),
                 sum3: tw(10000000),
-                sum4: tw(-2*256)
+                sum4: tw(-2 * 256)
             };
 
             let sumsToCheck = {
@@ -297,15 +297,18 @@ contract('MultiVendingToken', (accounts) => {
                 let d = await mt.dividendsRightsOf(tokens[i], accounts[2]);
                 let ins = await mt.releaseDividendsRights(tokens[i], d, {from: accounts[2], gasPrice: gasPrice});
                 fees.push(ins.receipt.gasUsed * gasPrice);
-            };
+            }
+            ;
             let balanceNow = await web3.eth.getBalance(accounts[2]);
             let fee = 0;
             for (let j = 0; j < 5; j++) {
                 fee += fees[j];
-            };
+            }
+            ;
             for (let j = 0; j < 5; j++) {
                 assert((balanceBefore.plus(tw(5)).eq(balanceNow.plus(fee))));
-            };
+            }
+            ;
         });
     });
 });
