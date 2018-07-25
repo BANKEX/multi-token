@@ -1,8 +1,9 @@
 pragma solidity ^0.4.23;
-import "../token/multiToken/MultiDividendsToken.sol";
-import "../ownership/Ownable.sol";
+import "../../abstract/ERC888/ERC888Sec.sol";
+import "../../libs/ownership/Ownable.sol";
+import "../../abstract/Cassette/EtherCassette.sol";
 
-contract MultiVendingToken is MultiDividendsToken, Ownable {
+contract MultiVendingToken is ERC888Sec, Ownable, EtherCassette {
   uint constant DECIMAL_MULTIPLIER = 10 ** 18;
   string public name = "Vending Token";
   string public symbol = "VEND";

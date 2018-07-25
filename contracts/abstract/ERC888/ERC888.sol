@@ -1,10 +1,10 @@
 pragma solidity ^0.4.23;
 
-import "../../math/SafeMath.sol";
-import "./MultiTokenInterface.sol";
+import "../../libs/math/SafeMath.sol";
+import "./IERC888.sol";
 
 
-contract MultiToken is MultiTokenInterface {
+contract ERC888 is IERC888 {
   using SafeMath for uint;
 
   mapping(uint => mapping(address => mapping(address => uint))) internal allowed;
@@ -59,31 +59,19 @@ contract MultiToken is MultiTokenInterface {
   * @param _value uint the amount of tokens to be transferred
   */
   function transfer_(uint _tokenId, address _from, address _to, uint _value) internal returns (bool) {
-    require(_from != _to);
-    mapping(address => uint) _balances = balances[_tokenId];
-    uint _bfrom = _balances[_from];
-    uint _bto = _balances[_to];
-    require(_to != address(0));
-    require(_value <= _bfrom);
-    _balances[_from] = _bfrom.sub(_value);
-    _balances[_to] = _bto.add(_value);
+    if(_from != _to){
+      mapping(address => uint) _balances = balances[_tokenId];
+      uint _bfrom = _balances[_from];
+      uint _bto = _balances[_to];
+      require(_to != address(0));
+      require(_value <= _bfrom);
+      _balances[_from] = _bfrom.sub(_value);
+      _balances[_to] = _bto.add(_value);
+    }
     emit Transfer(_tokenId, _from, _to, _value);
     return true;
   }
   
-  /**
-  * @dev Transfer tokens from one address to another, decreasing allowance
-  * @param _tokenId subtoken identifier
-  * @param _from address The address which you want to send tokens from
-  * @param _to address The address which you want to transfer to
-  * @param _value The amount of tokens to be transferred
-  */
-  function transferAllowed_(uint _tokenId, address _from, address _to, uint _value) internal returns (bool) {
-    uint _allowed = allowed[_tokenId][_from][msg.sender];
-    require(_value <= _allowed);
-    allowed[_tokenId][_from][msg.sender] = _allowed.sub(_value);
-    return transfer_(_tokenId, _from, _to, _value);
-  }
 
   /**
   * @dev Transfer tokens from one address to another
@@ -93,7 +81,10 @@ contract MultiToken is MultiTokenInterface {
   * @param _value uint the amount of tokens to be transferred
   */
   function transferFrom(uint _tokenId, address _from, address _to, uint _value) external returns (bool) {
-    return transferAllowed_(_tokenId, _from, _to, _value);
+    uint _allowed = allowed[_tokenId][_from][msg.sender];
+    require(_value <= _allowed);
+    allowed[_tokenId][_from][msg.sender] = _allowed.sub(_value);
+    return transfer_(_tokenId, _from, _to, _value);
   }
   
   /**

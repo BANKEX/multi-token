@@ -1,8 +1,8 @@
 pragma solidity ^0.4.23;
 
-import "./MultiTokenInterface.sol";
+import "./IERC888.sol";
 
-contract MultiDividendsTokenInterface is MultiTokenInterface {
+contract IERC888Sec is IERC888 {
   event ReleaseDividendsRights(uint indexed tokenId, address indexed _for, uint256 value);
   event AcceptDividends(uint indexed tokenId, uint256 value);
 

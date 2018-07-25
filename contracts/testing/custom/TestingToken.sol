@@ -1,8 +1,8 @@
 pragma solidity ^0.4.23;
-import "../token/multiToken/MultiDividendsToken.sol";
+import "../../abstract/ERC888/ERC888Sec.sol";
+import "../../abstract/Cassette/EtherCassette.sol";
 
-
-contract TestingToken is MultiDividendsToken {
+contract TestingToken is ERC888Sec, EtherCassette {
   mapping(uint => address) internal ownerOf;
 
   event Init (uint indexed tokenId, address indexed owner, uint totalSupply);

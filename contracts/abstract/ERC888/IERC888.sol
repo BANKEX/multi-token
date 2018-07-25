@@ -1,7 +1,7 @@
 pragma solidity ^0.4.23;
 
 
-contract MultiTokenInterface {
+contract IERC888 {
   function totalSupply(uint256 _tokenId) external view returns (uint256);
   function balanceOf(uint256 _tokenId, address _owner) external view returns (uint256);
   function allowance(uint256 _tokenId, address _owner, address _spender) external view returns (uint256);

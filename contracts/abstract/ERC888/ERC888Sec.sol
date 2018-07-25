@@ -1,15 +1,15 @@
 pragma solidity ^0.4.23;
 
 
-import "../../math/SafeMath.sol";
-import "./MultiToken.sol";
-import "./MultiDividendsTokenInterface.sol";
-
+import "../../libs/math/SafeMath.sol";
+import "./ERC888.sol";
+import "./IERC888Sec.sol";
+import "../Cassette/ICassette.sol";
 
 /**
  * @title Multitoken token with dividends distribution support
  */
-contract MultiDividendsToken is MultiDividendsTokenInterface, MultiToken {
+contract ERC888Sec is IERC888Sec, ERC888, ICassette {
   using SafeMath for uint;
   
   uint constant DECIMAL_MULTIPLIER = 10 ** 18;
@@ -44,7 +44,7 @@ contract MultiDividendsToken is MultiDividendsTokenInterface, MultiToken {
     uint _dividendsRights = dividendsRightsOf_(_tokenId, _for);
     require(_dividendsRights >= _value);
     dividendsRightsFix[_tokenId][_for] -= _value;
-    _for.transfer(_value);
+    releaseAbstractToken_(_for, _value);
     emit ReleaseDividendsRights(_tokenId, _for, _value);
     return true;
   }
@@ -67,13 +67,15 @@ contract MultiDividendsToken is MultiDividendsTokenInterface, MultiToken {
   * @param _value uint the amount of tokens to be transferred
   */
   function dividendsRightsFixUpdate_(uint _tokenId, address _from, address _to, uint _value) private {
-    uint _dividendsPerToken = dividendsPerToken[_tokenId];
-    uint _balanceFrom = balances[_tokenId][_from];
-    uint _balanceTo = balances[_tokenId][_to];
-    dividendsRightsFix[_tokenId][_from] += _dividendsPerToken * _balanceFrom / DECIMAL_MULTIPLIER -
-    _dividendsPerToken * (_balanceFrom - _value) / DECIMAL_MULTIPLIER;
-    dividendsRightsFix[_tokenId][_to] += _dividendsPerToken * _balanceTo / DECIMAL_MULTIPLIER -
-    _dividendsPerToken * (_balanceTo + _value) / DECIMAL_MULTIPLIER;
+    if (_from != _to) {
+      uint _dividendsPerToken = dividendsPerToken[_tokenId];
+      uint _balanceFrom = balances[_tokenId][_from];
+      uint _balanceTo = balances[_tokenId][_to];
+      dividendsRightsFix[_tokenId][_from] += _dividendsPerToken * _balanceFrom / DECIMAL_MULTIPLIER -
+      _dividendsPerToken * (_balanceFrom - _value) / DECIMAL_MULTIPLIER;
+      dividendsRightsFix[_tokenId][_to] += _dividendsPerToken * _balanceTo / DECIMAL_MULTIPLIER -
+      _dividendsPerToken * (_balanceTo + _value) / DECIMAL_MULTIPLIER;
+    }
   }
   
   /**
@@ -96,22 +98,49 @@ contract MultiDividendsToken is MultiDividendsTokenInterface, MultiToken {
   */
   function transferFrom(uint _tokenId, address _from, address _to, uint _value) external returns (bool) {
     dividendsRightsFixUpdate_(_tokenId, _from, _to, _value);
-    return transferAllowed_(_tokenId, _from, _to, _value);
+    uint _allowed = allowed[_tokenId][_from][msg.sender];
+    require(_value <= _allowed);
+    allowed[_tokenId][_from][msg.sender] = _allowed.sub(_value);
+    return transfer_(_tokenId, _from, _to, _value);
   }
   
   /**
   * @dev Accept dividends
   */
-  function acceptDividends(uint _tokenId) public payable {
+  function acceptDividends(uint _tokenId, uint _tvalue) public payable {
+    uint _value;
+    if(getCassetteType_()==CT_ETHER) {
+      _value = msg.value;
+    } else if (getCassetteType_()==CT_TOKEN) {
+      _value = _tvalue;
+      require(acceptAbstractToken_(_value));
+    } else revert();
+
     uint _dividendsPerToken = dividendsPerToken[_tokenId];
     uint _totalSupply = totalSupply_[_tokenId];
     require(_totalSupply > 0);
-    _dividendsPerToken = _dividendsPerToken.add(msg.value.mul(DECIMAL_MULTIPLIER) / _totalSupply);
+    _dividendsPerToken = _dividendsPerToken.add(_value.mul(DECIMAL_MULTIPLIER) / _totalSupply);
     require(_dividendsPerToken.mul(_totalSupply) <= INT256_MAX);
     dividendsPerToken[_tokenId] = _dividendsPerToken;
-    emit AcceptDividends(_tokenId, msg.value);
+    emit AcceptDividends(_tokenId, _value);
   }
   
+
+  /**
+  * @dev Accept dividends
+  */
+  function acceptDividends(uint _tokenId) public payable {
+    require(getCassetteType_()==CT_ETHER);
+    uint _value = msg.value;
+    uint _dividendsPerToken = dividendsPerToken[_tokenId];
+    uint _totalSupply = totalSupply_[_tokenId];
+    require(_totalSupply > 0);
+    _dividendsPerToken = _dividendsPerToken.add(_value.mul(DECIMAL_MULTIPLIER) / _totalSupply);
+    require(_dividendsPerToken.mul(_totalSupply) <= INT256_MAX);
+    dividendsPerToken[_tokenId] = _dividendsPerToken;
+    emit AcceptDividends(_tokenId, _value);
+  }
+
   function() public payable {
     revert();
   }
